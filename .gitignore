@@ -1,0 +1,16 @@
+/.bundle/
+/pkg/
+/tmp/
+/coverage/
+*.gem
+Gemfile.lock
+
+# web demo
+/web/.bundle/
+/web/vendor/
+
+# cloudflare worker
+/worker/node_modules/
+/worker/.wrangler/
+/worker/dist/
+.dev.vars
