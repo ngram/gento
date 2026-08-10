@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      RACK_ENV: production
+      SLIDESCRAPER_CACHE_TTL: "3600"
+    healthcheck:
+      test: ["CMD", "ruby", "-e", "require 'net/http'; exit(Net::HTTP.get_response(URI('http://127.0.0.1:8080/healthz')).code == '200' ? 0 : 1)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3

@@ -1,0 +1,44 @@
+<header>
+  <h1>slidescraper</h1>
+  <p>スライドの URL を入力すると、各ページの画像を一覧で表示します。</p>
+</header>
+
+<form method="get" action="/">
+  <input type="url" name="url" value="<%= h(@url) %>"
+         placeholder="https://speakerdeck.com/user/talk" required
+         aria-label="スライドの URL">
+  <button type="submit">読み込む</button>
+</form>
+
+<p class="providers">
+  対応サービス:
+  <% Slidescraper.providers.each do |name| %><code><%= h(name) %></code> <% end %>
+</p>
+
+<% if @error %>
+  <p class="error"><%= h(@error) %></p>
+<% end %>
+
+<% if @deck %>
+  <div class="deck-meta">
+    <h2><%= h(@deck.title || "(no title)") %></h2>
+    <p>
+      <%= h(@deck.provider) %>
+      <% if @deck.author %>・<%= h(@deck.author) %><% end %>
+      ・<%= @deck.page_count %> ページ
+      ・<a href="<%= h(@deck.source_url) %>" rel="noopener noreferrer">元ページ</a>
+    </p>
+  </div>
+
+  <ul class="slides">
+    <% @deck.slides.each do |slide| %>
+      <li>
+        <a href="<%= h(slide.url) %>" rel="noopener noreferrer">
+          <img src="<%= h(slide.url) %>" alt="スライド <%= slide.number %> ページ目"
+               loading="lazy" referrerpolicy="no-referrer">
+        </a>
+        <span class="n"><%= slide.number %> / <%= @deck.page_count %></span>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

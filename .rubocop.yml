@@ -40,3 +40,15 @@ RSpec/ExampleLength:
 
 RSpec/MultipleExpectations:
   Max: 5
+
+# web/ is its own application root, so its spec paths mirror web/, not the
+# gem's lib/slidescraper/ layout.
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "web/spec/**/*"
+
+# DeckCache#fetch computes its value from the block; it is not Hash#fetch and
+# the block is not redundant.
+Style/RedundantFetchBlock:
+  Exclude:
+    - "web/spec/deck_cache_spec.rb"

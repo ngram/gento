@@ -3,7 +3,7 @@
 /tmp/
 /coverage/
 *.gem
-Gemfile.lock
+/Gemfile.lock
 
 # web demo
 /web/.bundle/

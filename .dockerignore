@@ -1,0 +1,15 @@
+.git
+.github
+.bundle
+web/.bundle
+web/bin
+bin
+pkg
+tmp
+coverage
+spec
+web/spec
+worker
+docs
+*.gem
+Gemfile.lock
