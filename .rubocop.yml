@@ -29,8 +29,11 @@ Metrics/MethodLength:
 Metrics/ParameterLists:
   CountKeywordArgs: false
 
+# Html is a tag scanner plus the query API over it. Entity handling has
+# already moved out; splitting the lexer from the queries would add a layer
+# without making either half clearer.
 Metrics/ClassLength:
-  Max: 130
+  Max: 150
 
 Layout/LineLength:
   Max: 110

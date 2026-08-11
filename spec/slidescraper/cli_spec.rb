@@ -5,12 +5,10 @@ RSpec.describe Slidescraper::CLI do
 
   let(:stdout) { StringIO.new }
   let(:stderr) { StringIO.new }
-  let(:url) { "https://speakerdeck.com/ngram/slide-viewer" }
+  let(:url) { "https://speakerdeck.com/axbom/digital-ethics-as-a-driver-of-design-innovation" }
   let(:fetcher) do
     StubFetcher.new
                .stub(url, body: fixture("speaker_deck", "deck.html"))
-               .stub("https://speakerdeck.com/player/abc123def456", body: fixture("speaker_deck",
-                                                                                  "player.html"))
                .stub(%r{/oembed\.json}, body: fixture("speaker_deck", "oembed.json"))
   end
 
@@ -20,14 +18,14 @@ RSpec.describe Slidescraper::CLI do
     expect(cli.run([url])).to eq(described_class::EXIT_SUCCESS)
 
     data = JSON.parse(stdout.string)
-    expect(data["page_count"]).to eq(4)
+    expect(data["page_count"]).to eq(79)
     expect(data["provider"]).to eq("speaker_deck")
   end
 
   it "prints one image URL per line with --format urls" do
     cli.run(["--format", "urls", url])
 
-    expect(stdout.string.lines.size).to eq(4)
+    expect(stdout.string.lines.size).to eq(79)
     expect(stdout.string.lines.first).to start_with("https://files.speakerdeck.com/")
   end
 

@@ -106,9 +106,20 @@ Cloudflare 完結ではなくなりますが、次の分離構成も取れます
 
 `web/Dockerfile` はどこにでも載る普通のイメージなので、この切り替えに追加作業はほぼ不要です。
 
+## コンテナの egress 許可リストについて
+
+`worker/src/providers.ts` の `EGRESS_ALLOWLIST` が、コンテナから出られる先を縛っています。
+スクレイピング対象の4サイトだけを許可しているので、それ以外への通信は
+Cloudflare 側でブロックされます。
+
+Google スライドの画像だけは注意が必要です。gem が返す URL は `docs.google.com` の
+export エンドポイントですが、実体は `*.googleusercontent.com` への 307 リダイレクトです。
+画像を読むのは閲覧者のブラウザなのでコンテナの許可リストには影響しませんが、
+将来サーバー側で画像を取得する処理を足す場合は `*.googleusercontent.com` の追加が必要になります。
+
 ## 未検証の項目
 
-- **コンテナイメージのビルド**: 調査環境に Docker デーモンがなく、`web/Dockerfile` は
+- **コンテナイメージのビルド**: 開発環境に Docker デーモンがなく、`web/Dockerfile` は
   ビルドできていません。設定の妥当性は `wrangler deploy --dry-run` まで確認済みです
   （バインディングと Dockerfile の解決は成功）。
 - **実デプロイ**: Cloudflare アカウントに対する `wrangler deploy` は未実行です。

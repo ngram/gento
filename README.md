@@ -123,13 +123,23 @@ $ (cd web && bundle exec rspec)
 $ (cd worker && npm test && npm run typecheck)
 ```
 
-### 現時点の制約
+### 検証状況
 
-各サービスの抽出ルールは、公開されているエンドポイント仕様と一般的なマークアップ構造に
-基づいて書いてあり、**実ページのキャプチャでは検証できていません**
-（開発環境から対象サイトへ到達できなかったため）。
-`spec/fixtures/` は手書きの合成フィクスチャです。
-実 HTML への差し替え手順は [spec/fixtures/README.md](spec/fixtures/README.md) を参照してください。
+4サービスすべて、実ページのキャプチャに対してテストが通っており、
+ライブの実 URL でも end-to-end で動作を確認しています。
+`spec/fixtures/` は実際に配信されたページをそのまま保存したものです
+（[spec/fixtures/README.md](spec/fixtures/README.md)）。
+
+既知の注意点:
+
+- **SlideShare** は稀に JavaScript のボット判定ページを返します。恒常的ではなく、
+  短時間に大量アクセスした場合に出やすいものです。gem はこれを検出して
+  「スライドが0枚」ではなく専用のエラーメッセージを返します。
+- **Google スライド** は「ウェブに公開」した `/d/e/<id>/` 形式の URL に対応する
+  コードパスを持っていますが、公開設定のデッキが用意できず未検証です。
+  通常の共有 URL（`/d/<id>/`）は検証済みです。
+- Google スライドの画像 URL は `docs.google.com` の export エンドポイントで、
+  実体は `*.googleusercontent.com` への 307 リダイレクトです。
 
 ## ライセンス
 

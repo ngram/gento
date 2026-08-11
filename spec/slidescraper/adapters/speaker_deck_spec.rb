@@ -3,12 +3,13 @@
 RSpec.describe Slidescraper::Adapters::SpeakerDeck do
   subject(:adapter) { described_class.new(fetcher: fetcher) }
 
-  let(:url) { "https://speakerdeck.com/ngram/slide-viewer" }
-  let(:player_url) { "https://speakerdeck.com/player/abc123def456" }
+  # Captured from a real 79-page deck. The page also carries cover images for
+  # 34 other decks, which is what makes the id filtering worth testing.
+  let(:url) { "https://speakerdeck.com/axbom/digital-ethics-as-a-driver-of-design-innovation" }
+  let(:deck_id) { "e751d96689af4d41a0cc55c74507f40e" }
   let(:fetcher) do
     StubFetcher.new
                .stub(url, body: fixture("speaker_deck", "deck.html"))
-               .stub(player_url, body: fixture("speaker_deck", "player.html"))
                .stub(%r{/oembed\.json}, body: fixture("speaker_deck", "oembed.json"))
   end
 
@@ -17,58 +18,64 @@ RSpec.describe Slidescraper::Adapters::SpeakerDeck do
       expect(described_class).to be_handles(url)
     end
 
-    it "ignores other hosts" do
-      expect(described_class).not_to be_handles("https://example.com/speakerdeck.com/x")
+    it "ignores a lookalike host" do
+      expect(described_class).not_to be_handles("https://evilspeakerdeck.com/a/b")
     end
   end
 
   describe "#scrape" do
-    it "returns the pages in order" do
+    it "returns every page in order" do
       deck = adapter.scrape(url)
 
-      expect(deck.slides.map(&:url)).to eq(
-        (0..3).map { |n| "https://files.speakerdeck.com/presentations/abc123def456/slide_#{n}.jpg" }
-      )
-      expect(deck.slides.map(&:number)).to eq([1, 2, 3, 4])
+      expect(deck.page_count).to eq(79)
+      expect(deck.slides.map(&:number)).to eq((1..79).to_a)
+      expect(deck.slides.first.url)
+        .to eq("https://files.speakerdeck.com/presentations/#{deck_id}/slide_0.jpg")
+      expect(deck.slides.last.url)
+        .to eq("https://files.speakerdeck.com/presentations/#{deck_id}/slide_78.jpg")
+    end
+
+    it "excludes the recommended decks shown alongside this one" do
+      deck = adapter.scrape(url)
+
+      expect(deck.slides.map(&:url)).to all(include(deck_id))
+    end
+
+    it "excludes the low-resolution preview images" do
+      deck = adapter.scrape(url)
+
+      expect(deck.slides.map(&:url)).to all(satisfy { |url| !url.include?("preview_slide") })
+    end
+
+    it "deduplicates pages that also appear with a cache-busting query" do
+      deck = adapter.scrape(url)
+
+      expect(deck.slides.map(&:url).uniq.size).to eq(79)
+      expect(deck.slides.map(&:url)).to all(satisfy { |url| !url.include?("?") })
     end
 
     it "prefers oEmbed for title and author" do
       deck = adapter.scrape(url)
 
-      expect(deck.title).to eq("快適なスライド閲覧生活を実現する Web サービスの開発")
-      expect(deck.author).to eq("ngram")
+      expect(deck.title).to eq("Digital Ethics as a Driver of Design Innovation")
+      expect(deck.author).to eq("Per Axbom")
       expect(deck.provider).to eq("speaker_deck")
-      expect(deck.page_count).to eq(4)
     end
 
-    it "excludes images served from outside the slide CDN" do
-      deck = adapter.scrape(url)
-
-      expect(deck.slides.map(&:url)).to all(start_with("https://files.speakerdeck.com/"))
-    end
-
-    it "follows the player only when the deck page has no slide images" do
-      adapter.scrape(url)
-
-      expect(fetcher).to be_requested(player_url)
-    end
-
-    it "still succeeds when the oEmbed endpoint is unavailable" do
-      fetcher = StubFetcher.new
-                           .stub(url, body: fixture("speaker_deck", "deck.html"))
-                           .stub(player_url, body: fixture("speaker_deck", "player.html"))
+    it "still scrapes when the oEmbed endpoint is unavailable" do
+      fetcher = StubFetcher.new.stub(url, body: fixture("speaker_deck", "deck.html"))
 
       deck = described_class.new(fetcher: fetcher).scrape(url)
 
-      expect(deck.page_count).to eq(4)
-      expect(deck.title).to eq("快適なスライド閲覧生活を実現する Web サービスの開発")
+      expect(deck.page_count).to eq(79)
+      expect(deck.title).to eq("Digital Ethics as a Driver of Design Innovation")
     end
 
-    it "raises ExtractionError when no images can be found" do
+    it "raises ExtractionError when the page holds no deck" do
       fetcher = StubFetcher.new.stub(url, body: "<html><body>nothing here</body></html>")
 
       expect { described_class.new(fetcher: fetcher).scrape(url) }
-        .to raise_error(Slidescraper::ExtractionError, /found no slide images/)
+        .to raise_error(Slidescraper::ExtractionError, /presentation id/)
     end
   end
 end

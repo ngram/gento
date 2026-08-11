@@ -14,8 +14,20 @@
 - Charset detection, so Shift_JIS and EUC-JP decks decode correctly.
 - `slidescraper` CLI, printing JSON or one image URL per line.
 
+- Proxy support in the net/http fetcher, honouring `HTTPS_PROXY` (which
+  net/http ignores on its own) and bypassing it for private addresses.
+
+### Fixed
+
+- The tag scanner consumed element content, so a tag nested inside another of
+  the same name was invisible — which is most of the markup on a real page.
+- Typographic entities such as `&hellip;` and `&mdash;` were left undecoded.
+- Titles carrying the author's own line breaks are collapsed to single spaces.
+
 ### Known gaps
 
-- The per-site extraction rules are written against documented endpoints and
-  conventional markup, not against captured pages. See
-  `spec/fixtures/README.md`.
+- Google Slides decks published to the web (`/d/e/<id>/` URLs) have a code
+  path but no verification; ordinary shared decks are verified.
+- SlideShare intermittently answers with a bot interstitial. It is detected
+  and reported as such, but getting past it needs a JavaScript-capable
+  `Fetcher`.

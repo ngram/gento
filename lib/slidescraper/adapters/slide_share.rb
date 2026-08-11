@@ -4,13 +4,18 @@ module Slidescraper
   module Adapters
     # SlideShare (https://www.slideshare.net/<user>/<slug>).
     #
-    # Slide images live on image.slidesharecdn.com and are named
-    # <slug>-<page>-<width>.jpg, so page order is recoverable from the URL even
-    # when the markup renders them out of order or lazily.
+    # SlideShare usually serves the deck to an ordinary HTTP client, but it
+    # sits behind bot protection that intermittently answers with a small
+    # JavaScript interstitial instead — most readily under bursty access.
+    #
+    # That interstitial has no slides in it, so without recognising it the
+    # adapter would report an empty deck and leave the caller guessing. Naming
+    # it costs one check and turns a mystery into something actionable: wait,
+    # or supply a JavaScript-capable Fetcher.
     class SlideShare < Base
-      IMAGE_HOST = %r{\Ahttps?://[^/]*slidesharecdn\.com/}i
-      # Trailing "-<page>-<width>" in the CDN filename.
-      PAGED_IMAGE = /-(\d+)-(\d+)\.(?:jpg|jpeg|png|webp)/i
+      CHALLENGE = /Client Challenge|_fs-ch-/
+      # <slug>-<page>-<width>.jpg on the slide CDN.
+      SLIDE_IMAGE = %r{\Ahttps://[a-z0-9.-]*slidesharecdn\.com/\S+-(\d+)-(\d+)\.(?:jpe?g|png|webp)}i
 
       def self.hosts
         %w[slideshare.net]
@@ -18,13 +23,36 @@ module Slidescraper
 
       def scrape(url)
         page = get(url).html
-        images = largest_per_page(image_candidates(page, url, IMAGE_HOST).grep(PAGED_IMAGE))
+        fail_challenge(url) if challenge?(page)
+
+        images = slide_images(page)
         fail_extraction("found no slide images at #{url}") if images.empty?
 
         build_deck(url, page, images)
       end
 
       private
+
+      def challenge?(page)
+        page.title.to_s.match?(CHALLENGE) || page.source.match?(CHALLENGE)
+      end
+
+      def fail_challenge(url)
+        fail_extraction(
+          "#{url} returned SlideShare's JavaScript bot challenge instead of the deck. " \
+          "Scraping SlideShare needs a JavaScript-capable Slidescraper::Fetcher; " \
+          "the default net/http one cannot get past it."
+        )
+      end
+
+      # Pages are published at several widths, not always the same set for
+      # every page, so keep the widest copy of each.
+      def slide_images(page)
+        page.urls(SLIDE_IMAGE)
+            .group_by { |image| Integer(image[SLIDE_IMAGE, 1]) }
+            .sort_by(&:first)
+            .map { |_, group| group.max_by { |image| Integer(image[SLIDE_IMAGE, 2]) } }
+      end
 
       def build_deck(url, page, images)
         metadata = open_graph_metadata(page)
@@ -39,14 +67,6 @@ module Slidescraper
           published_at: document["datePublished"],
           slides: build_slides(images)
         )
-      end
-
-      # The same page is published at several widths. Keep the widest copy of
-      # each page, then order by page number.
-      def largest_per_page(images)
-        images.group_by { |image| image[PAGED_IMAGE, 1].to_i }
-              .sort_by(&:first)
-              .map { |_, group| group.max_by { |image| image[PAGED_IMAGE, 2].to_i } }
       end
 
       def json_ld_document(page)

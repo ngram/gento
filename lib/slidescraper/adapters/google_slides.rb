@@ -2,72 +2,62 @@
 
 module Slidescraper
   module Adapters
-    # Google Slides, for decks that are shared publicly or published to the web.
+    # Google Slides, for decks shared publicly or published to the web.
     #
-    # Unlike the other three sites, Google does not render slide images into
-    # the page. It exposes a per-page PNG export endpoint instead, keyed by the
-    # slide's page object id. So the job here is to recover the presentation id
-    # and the ordered list of page ids, then build export URLs from them.
+    # Google does not render page images into the deck page; it exposes a
+    # per-page PNG export keyed by the slide's page object id. Recovering an
+    # ordered list of those ids is the whole job.
+    #
+    # The viewer at /embed is the obvious place to look and the wrong one: its
+    # payload mixes page ids with the ids of elements drawn on those pages,
+    # with nothing in the id itself to tell them apart. /htmlpresent instead
+    # references each page exactly once, in order, so that is what we read.
     class GoogleSlides < Base
-      EMBED_URL = "https://docs.google.com/presentation/d/%s/embed"
-      PUBLISHED_EMBED_URL = "https://docs.google.com/presentation/d/e/%s/embed"
-      EXPORT_URL = "https://docs.google.com/presentation/d/%s/export/png?id=%s&pageid=%s"
-      PUBLISHED_EXPORT_URL = "https://docs.google.com/presentation/d/e/%s/export/png?pageid=%s"
+      HTMLPRESENT_URL = "https://docs.google.com/presentation/d/%s%s/htmlpresent"
+      EXPORT_URL = "https://docs.google.com/presentation/d/%s%s/export/png?id=%s&pageid=%s"
 
       # /presentation/d/<id>/... and the published /presentation/d/e/<id>/...
       PRESENTATION_ID = %r{/presentation/d/(e/)?([A-Za-z0-9_-]{16,})}
-      # Page object ids as they appear in the viewer payload: "p", "p1",
-      # "g1a2b3c4d5_0_6", "SLIDES_API..." and friends.
-      PAGE_ID = /"(?:id|objectId)"\s*:\s*"([A-Za-z0-9_]{1,64})"/
+      PAGE_ID = /[?&]pageid=([A-Za-z0-9_]+)/
 
       def self.hosts
         %w[docs.google.com]
       end
 
       def scrape(url)
-        published, id = presentation_id(url)
+        prefix, id = presentation_id(url)
         fail_extraction("could not find a presentation id in #{url}") unless id
 
-        viewer_url = format(published ? PUBLISHED_EMBED_URL : EMBED_URL, id)
-        page_ids = page_ids(get(viewer_url).body)
-        fail_extraction("could not find slide page ids for #{url}; is the deck public?") if page_ids.empty?
+        page = get(format(HTMLPRESENT_URL, prefix, id)).html
+        pages = page_ids(page, url)
 
         Deck.new(
           provider: provider,
           source_url: url,
-          title: title_for(url),
-          slides: build_slides(page_ids.map { |page_id| export_url(published, id, page_id) })
+          title: title_from(page),
+          slides: build_slides(pages.map { |page_id| format(EXPORT_URL, prefix, id, id, page_id) })
         )
       end
 
       private
 
+      # Each page is referenced exactly once here, in order.
+      def page_ids(page, url)
+        ids = page.source.scan(PAGE_ID).flatten.uniq
+        fail_extraction("found no slide pages for #{url}; is the deck shared publicly?") if ids.empty?
+
+        ids
+      end
+
       def presentation_id(url)
         match = url.to_s.match(PRESENTATION_ID)
-        return [false, nil] unless match
+        return [nil, nil] unless match
 
-        [!match[1].nil?, match[2]]
+        [match[1].to_s, match[2]]
       end
 
-      def export_url(published, id, page_id)
-        if published
-          format(PUBLISHED_EXPORT_URL, id, page_id)
-        else
-          format(EXPORT_URL, id, id, page_id)
-        end
-      end
-
-      # The viewer ships its slide list as a JSON blob inside the page. Keep
-      # first occurrences only: ids repeat once per referenced element, and the
-      # first mention of each is in slide order.
-      def page_ids(body)
-        body.scan(PAGE_ID).flatten.uniq
-      end
-
-      def title_for(url)
-        get(url).html.title&.sub(/\s*-\s*Google (?:Slides|スライド)\s*\z/, "")
-      rescue FetchError
-        nil
+      def title_from(page)
+        page.title&.sub(/\s*-\s*Google (?:Slides|スライド)\s*\z/, "")
       end
     end
   end

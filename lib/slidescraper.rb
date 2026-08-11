@@ -3,6 +3,7 @@
 require_relative "slidescraper/version"
 require_relative "slidescraper/errors"
 require_relative "slidescraper/charset"
+require_relative "slidescraper/entities"
 require_relative "slidescraper/html"
 require_relative "slidescraper/response"
 require_relative "slidescraper/fetcher"

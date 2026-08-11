@@ -28,6 +28,24 @@ RSpec.describe Slidescraper::Deck do
     expect { result.slides << slide(2) }.to raise_error(FrozenError)
   end
 
+  it "collapses the line breaks authors type into slide titles" do
+    result = described_class.new(
+      provider: "test", source_url: "https://example.com/d", slides: [slide(1)],
+      title: "AI\u000Bと\u000B\u000Bひとりで  働く\n"
+    )
+
+    expect(result.title).to eq("AI と ひとりで 働く")
+  end
+
+  it "treats whitespace-only metadata as absent" do
+    result = described_class.new(
+      provider: "test", source_url: "https://example.com/d", slides: [slide(1)], author: "  \n "
+    )
+
+    expect(result.author).to be_nil
+    expect(result.to_h).not_to have_key(:author)
+  end
+
   it "round-trips through JSON" do
     data = JSON.parse(deck([slide(1), slide(2)]).to_json)
 

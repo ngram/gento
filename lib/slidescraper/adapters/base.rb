@@ -73,8 +73,31 @@ module Slidescraper
         {
           title: html.meta("og:title", "twitter:title") || html.title,
           description: html.meta("og:description", "description"),
-          author: html.meta("og:site_name_author", "author", "twitter:creator")
+          author: html.meta("og:author", "author", "article:author")
         }
+      end
+
+      # The oEmbed endpoint a page advertises in its head, if any.
+      #
+      # Every site here publishes one, so discovering it beats hardcoding a
+      # URL per adapter: the site tells us where its own endpoint lives.
+      def oembed_endpoint(html)
+        html.tags("link")
+            .find { |attrs| attrs["type"].to_s.include?("json+oembed") }
+            &.fetch("href", nil)
+      end
+
+      # oEmbed metadata, or an empty hash.
+      #
+      # It is always a nice-to-have: cleaner titles and real author names than
+      # OpenGraph offers, but never something a scrape should fail over.
+      def fetch_oembed(html)
+        endpoint = oembed_endpoint(html)
+        return {} unless endpoint
+
+        get(endpoint, headers: { "accept" => "application/json" }).json
+      rescue FetchError, ExtractionError
+        {}
       end
 
       def build_slides(urls, width: nil, height: nil)
@@ -83,48 +106,11 @@ module Slidescraper
         end
       end
 
-      # Every image URL referenced by an <img>, including lazy-loading data
-      # attributes and srcset candidates, restricted to a CDN host pattern.
-      #
-      # Scanning by host rather than by CSS class is a deliberate trade: class
-      # names churn with every redesign, but a site's image CDN hostname is
-      # baked into years of published embeds and effectively never moves.
-      def image_candidates(html, base_url, host_pattern)
-        urls = html.tags("img").flat_map { |attrs| image_urls_from(attrs) }
-        urls.filter_map { |url| absolute_url(url, base_url) }
-            .grep(host_pattern)
-            .uniq
-      end
-
-      def image_urls_from(attrs)
-        direct = attrs.values_at("src", "data-src", "data-normal", "data-full",
-                                 "data-original", "data-lazy")
-        direct.compact + srcset_urls(attrs["srcset"] || attrs["data-srcset"])
-      end
-
-      # "a.jpg 320w, b.jpg 640w" -> ["a.jpg", "b.jpg"]
-      def srcset_urls(srcset)
-        return [] if srcset.nil? || srcset.empty?
-
-        srcset.split(",").filter_map { |candidate| candidate.strip.split(/\s+/).first }
-      end
-
-      # Orders slide images by the page number embedded in their URL, which is
-      # how every one of these CDNs names them. Falls back to the order the
-      # images appeared in when no number is present.
-      def order_by_page_number(urls)
-        numbered = urls.each_with_index.map do |url, index|
-          [page_number_in(url) || Float::INFINITY, index, url]
-        end
-        numbered.sort_by { |number, index, _| [number, index] }.map(&:last)
-      end
-
-      def page_number_in(url)
-        path = URI.parse(url).path
-        match = path.match(/(?:slide[_-]|[-_])(\d+)(?:[-_.]|\z)/i)
-        match && Integer(match[1])
-      rescue URI::Error
-        nil
+      # The same image is often referenced at several sizes through a query
+      # string (`?width=160`, a cache-busting timestamp). Dropping the query
+      # before deduplicating collapses those into one page.
+      def without_query(url)
+        url.to_s.split("?").first.to_s
       end
 
       def fail_extraction(message)

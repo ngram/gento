@@ -3,53 +3,64 @@
 RSpec.describe Slidescraper::Adapters::GoogleSlides do
   subject(:adapter) { described_class.new(fetcher: fetcher) }
 
-  let(:id) { "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789" }
+  # Captured from a real, publicly shared 11-page presentation.
+  let(:id) { "1IvfYbYKyTRT9da16vlsLLqzpsOqxSHf_Y8tY1lmGA_w" }
   let(:url) { "https://docs.google.com/presentation/d/#{id}/edit" }
-  let(:embed_url) { "https://docs.google.com/presentation/d/#{id}/embed" }
+  let(:htmlpresent_url) { "https://docs.google.com/presentation/d/#{id}/htmlpresent" }
   let(:fetcher) do
-    StubFetcher.new
-               .stub(url, body: fixture("google_slides", "deck.html"))
-               .stub(embed_url, body: fixture("google_slides", "embed.html"))
+    StubFetcher.new.stub(htmlpresent_url, body: fixture("google_slides", "htmlpresent.html"))
   end
 
   describe "#scrape" do
-    it "builds a PNG export URL per slide page id" do
+    it "builds one PNG export URL per page, in order" do
       deck = adapter.scrape(url)
 
-      expect(deck.slides.map(&:url)).to eq(
-        %w[p1 g1a2b3c4d5_0_0 g1a2b3c4d5_0_6].map do |page|
-          "https://docs.google.com/presentation/d/#{id}/export/png?id=#{id}&pageid=#{page}"
-        end
+      expect(deck.page_count).to eq(11)
+      expect(deck.slides.first.url).to eq(
+        "https://docs.google.com/presentation/d/#{id}/export/png?id=#{id}&pageid=g1080cddb5a_2_84"
       )
+      expect(deck.slides.last.url).to end_with("pageid=g1080cddb5a_2_165")
+    end
+
+    it "counts each page once" do
+      deck = adapter.scrape(url)
+
+      expect(deck.slides.map(&:url).uniq.size).to eq(11)
     end
 
     it "strips the Google Slides suffix from the title" do
-      expect(adapter.scrape(url).title).to eq("Slide viewer deck")
+      expect(adapter.scrape(url).title).to eq("Google Presentation")
     end
 
-    it "uses the published-deck endpoints for /d/e/ URLs" do
-      published_url = "https://docs.google.com/presentation/d/e/#{id}/pub"
-      fetcher = StubFetcher.new
-                           .stub(published_url, body: fixture("google_slides", "deck.html"))
-                           .stub("https://docs.google.com/presentation/d/e/#{id}/embed",
-                                 body: fixture("google_slides", "embed.html"))
+    it "accepts any URL form that names the presentation" do
+      %w[edit preview present].each do |suffix|
+        deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/#{suffix}")
+        expect(deck.page_count).to eq(11)
+      end
+    end
 
-      deck = described_class.new(fetcher: fetcher).scrape(published_url)
+    it "uses the published-deck path for /d/e/ URLs" do
+      published = "https://docs.google.com/presentation/d/e/#{id}/pub"
+      fetcher = StubFetcher.new.stub(
+        "https://docs.google.com/presentation/d/e/#{id}/htmlpresent",
+        body: fixture("google_slides", "htmlpresent.html")
+      )
 
-      expect(deck.slides.first.url)
-        .to eq("https://docs.google.com/presentation/d/e/#{id}/export/png?pageid=p1")
+      deck = described_class.new(fetcher: fetcher).scrape(published)
+
+      expect(deck.slides.first.url).to start_with(
+        "https://docs.google.com/presentation/d/e/#{id}/export/png"
+      )
     end
 
     it "raises ExtractionError when the deck is not public" do
-      fetcher = StubFetcher.new
-                           .stub(url, body: "<html></html>")
-                           .stub(embed_url, body: "<html><body>Sign in</body></html>")
+      fetcher = StubFetcher.new.stub(htmlpresent_url, body: "<html><body>Sign in</body></html>")
 
       expect { described_class.new(fetcher: fetcher).scrape(url) }
-        .to raise_error(Slidescraper::ExtractionError, /is the deck public/)
+        .to raise_error(Slidescraper::ExtractionError, /shared publicly/)
     end
 
-    it "raises ExtractionError when the URL carries no presentation id" do
+    it "raises ExtractionError when the URL names no presentation" do
       expect { adapter.scrape("https://docs.google.com/document/d/abc/edit") }
         .to raise_error(Slidescraper::ExtractionError, /presentation id/)
     end

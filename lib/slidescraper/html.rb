@@ -26,17 +26,25 @@ module Slidescraper
       # already normalized, but a caller handing us a raw body should not blow
       # up mid-scan with an encoding error.
       @source = Charset.normalize(source)
-      @cache = {}
+      @tags = {}
+      @elements = {}
     end
 
     # Attribute hashes for every occurrence of `name`, in document order.
+    #
+    # Unlike #elements this never consumes element content, so it still finds
+    # tags nested inside another tag of the same name — which ordinary page
+    # markup is full of.
     def tags(name)
-      elements(name).map(&:first)
+      @tags[name.to_s.downcase] ||= scan_tags(name.to_s)
     end
 
     # [attributes, inner_html] pairs for every occurrence of `name`.
+    #
+    # Only useful for elements that do not nest, such as <script> and <title>;
+    # for anything else use #tags.
     def elements(name)
-      @cache[name.to_s.downcase] ||= scan_elements(name.to_s)
+      @elements[name.to_s.downcase] ||= scan_elements(name.to_s)
     end
 
     # Content of the first <meta> whose name/property/itemprop matches any key.
@@ -84,8 +92,25 @@ module Slidescraper
       end
     end
 
+    # Any absolute URL appearing anywhere in the document, in document order,
+    # entity-decoded and deduplicated.
+    #
+    # Slide hosts put page images wherever suits them: Speaker Deck uses
+    # <a href>, Docswell a lazy-loading data attribute, Google Slides a CSS
+    # background inside a style attribute. Matching the URL shape across the
+    # raw document handles all three, and keeps working when a site moves its
+    # images from one element to another.
+    ABSOLUTE_URL = %r{https?://[^\s"'<>\\)]+}
+
+    def urls(pattern = //)
+      source.scan(ABSOLUTE_URL)
+            .map { |url| decode_entities(url) }
+            .grep(pattern)
+            .uniq
+    end
+
     def decode_entities(text)
-      CGI.unescapeHTML(text.to_s)
+      Entities.decode(text)
     end
 
     private
@@ -100,10 +125,23 @@ module Slidescraper
       content unless content.nil? || content.empty?
     end
 
+    def scan_tags(name)
+      results = []
+      scanner = StringScanner.new(@source)
+      opening = opening_pattern(name)
+
+      while scanner.skip_until(opening)
+        attributes, = scan_attributes(scanner)
+        results << attributes
+      end
+
+      results
+    end
+
     def scan_elements(name)
       results = []
       scanner = StringScanner.new(@source)
-      opening = %r{<#{Regexp.escape(name)}(?=[\s>/])}i
+      opening = opening_pattern(name)
       void = VOID_ELEMENTS.include?(name.downcase)
 
       while scanner.skip_until(opening)
@@ -113,6 +151,10 @@ module Slidescraper
       end
 
       results
+    end
+
+    def opening_pattern(name)
+      %r{<#{Regexp.escape(name)}(?=[\s>/])}i
     end
 
     # Consumes the attribute list and the closing `>` of an open tag.
