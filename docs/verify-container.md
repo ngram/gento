@@ -4,6 +4,10 @@
 一般的な Linux + Docker 環境を想定しています（`docker compose` が使える前提。
 古い環境なら `docker-compose` に読み替えてください）。
 
+手元に Docker のあるマシンがない場合は、GitHub Codespaces で同じことができます。
+iPhone だけで完結する手順を [docs/codespaces.md](codespaces.md) にまとめてあります
+（Cloudflare へのデプロイまで含む）。
+
 所要時間は初回ビルドで 3〜5分程度です。
 
 ## 0. 前提の確認

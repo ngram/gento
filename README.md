@@ -115,16 +115,22 @@ Containers の利用には Workers Paid プラン（$5/月）が必要です。
 
 コンテナイメージをローカルの Docker で検証する手順は
 [docs/verify-container.md](docs/verify-container.md) にまとめています。
+手元に Docker がない場合は [docs/codespaces.md](docs/codespaces.md) を参照してください。
+`.devcontainer/` を同梱しているので、GitHub Codespaces を起動すれば
+Docker とデプロイまで含めて iPhone だけで検証できます。
 
 ## 開発
 
 ```console
 $ bundle install
-$ bundle exec rspec      # gem
+$ bundle exec rspec      # gem          97 examples
 $ bundle exec rubocop
-$ (cd web && bundle exec rspec)
-$ (cd worker && npm test && npm run typecheck)
+$ (cd web && bundle exec rspec)                 # デモアプリ 16 examples
+$ (cd worker && npm test && npm run typecheck)  # Worker     15 tests
 ```
+
+GitHub Codespaces なら `.devcontainer/` が上記をすべて用意します
+（[docs/codespaces.md](docs/codespaces.md)）。
 
 ### 検証状況
 
