@@ -24,11 +24,15 @@
 - Typographic entities such as `&hellip;` and `&mdash;` were left undecoded.
 - Titles carrying the author's own line breaks are collapsed to single spaces.
 
+- Google Slides decks published to the web return the signed `viewpage` URLs
+  embedded in the document. `/export/png` answers 404 for those decks, so the
+  URLs it would have built were unusable. Ordinary shared decks keep using
+  `/export/png`, which does not expire.
+
 ### Known gaps
 
-- Google Slides decks published to the web (`/d/e/<id>/` URLs) have a code
-  path but no verification; ordinary shared decks are verified, across both
-  page-id naming schemes and several URL forms.
 - SlideShare intermittently answers with a bot interstitial. It is detected
   and reported as such, but getting past it needs a JavaScript-capable
   `Fetcher`.
+- The signed `viewpage` URLs returned for published Google Slides decks
+  expire; how long they last has not been measured.

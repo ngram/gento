@@ -112,8 +112,10 @@ Cloudflare 完結ではなくなりますが、次の分離構成も取れます
 スクレイピング対象の4サイトだけを許可しているので、それ以外への通信は
 Cloudflare 側でブロックされます。
 
-Google スライドの画像だけは注意が必要です。gem が返す URL は `docs.google.com` の
-export エンドポイントですが、実体は `*.googleusercontent.com` への 307 リダイレクトです。
+Google スライドの画像だけは注意が必要です。通常の共有デッキで gem が返す URL は
+`docs.google.com` の export エンドポイントですが、実体は `*.googleusercontent.com` への
+307 リダイレクトです（ウェブに公開したデッキは `docs.google.com` の viewpage URL を
+直接返すのでリダイレクトしません）。
 画像を読むのは閲覧者のブラウザなのでコンテナの許可リストには影響しませんが、
 将来サーバー側で画像を取得する処理を足す場合は `*.googleusercontent.com` の追加が必要になります。
 

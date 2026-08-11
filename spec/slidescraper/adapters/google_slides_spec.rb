@@ -39,20 +39,6 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
       end
     end
 
-    it "uses the published-deck path for /d/e/ URLs" do
-      published = "https://docs.google.com/presentation/d/e/#{id}/pub"
-      fetcher = StubFetcher.new.stub(
-        "https://docs.google.com/presentation/d/e/#{id}/htmlpresent",
-        body: fixture("google_slides", "htmlpresent.html")
-      )
-
-      deck = described_class.new(fetcher: fetcher).scrape(published)
-
-      expect(deck.slides.first.url).to start_with(
-        "https://docs.google.com/presentation/d/e/#{id}/export/png"
-      )
-    end
-
     # A different real deck, whose pages are named "out_s01" and friends
     # rather than the "g<hex>_N_N" of the other fixture. Nothing in the id
     # shape can be relied on, so the adapter must not try.
@@ -74,6 +60,57 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
         deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/mobilepresent?slide=id.out_s01")
 
         expect(deck.page_count).to eq(18)
+      end
+    end
+
+    # Captured from a real deck published with File > Share > Publish to web.
+    context "with a deck published to the web" do
+      let(:id) do
+        "2PACX-1vQAvPVdKl0vSuMFEn6FYlt9Ka7KmEueXIYcAkUGzlEojVEtsRhOVD8esNXSKshSMdUsFspGDmKxNjD-"
+      end
+      let(:url) { "https://docs.google.com/presentation/d/e/#{id}/pub?start=false&slide=id.p" }
+      let(:fetcher) do
+        StubFetcher.new.stub("https://docs.google.com/presentation/d/e/#{id}/htmlpresent",
+                             body: fixture("google_slides", "htmlpresent-published.html"))
+      end
+
+      it "reads every page" do
+        deck = adapter.scrape(url)
+
+        expect(deck.page_count).to eq(53)
+        expect(deck.title).to include("自作OS")
+      end
+
+      # /export/png answers 404 for published decks whatever page id it is
+      # given, so the signed viewpage URL in the document is the only thing
+      # that actually serves their pages.
+      it "takes the signed viewpage URLs rather than building export URLs" do
+        deck = adapter.scrape(url)
+
+        expect(deck.slides.map(&:url)).to all(include("/viewpage?"))
+        expect(deck.slides.map(&:url)).to all(include("hmac="))
+        expect(deck.slides.map(&:url)).to all(exclude_substring("/export/png"))
+      end
+
+      it "keeps the pages in order" do
+        deck = adapter.scrape(url)
+
+        expect(deck.slides.first.url).to include("pageid=p&")
+        expect(deck.slides[1].url).to include("pageid=g375f5c7affe_0_42&")
+      end
+
+      it "counts each page once" do
+        deck = adapter.scrape(url)
+
+        expect(deck.slides.map(&:url).uniq.size).to eq(53)
+      end
+
+      it "raises ExtractionError when the deck is no longer published" do
+        fetcher = StubFetcher.new.stub("https://docs.google.com/presentation/d/e/#{id}/htmlpresent",
+                                       body: "<html><body>Not found</body></html>")
+
+        expect { described_class.new(fetcher: fetcher).scrape(url) }
+          .to raise_error(Slidescraper::ExtractionError, /still published/)
       end
     end
 
