@@ -27,7 +27,8 @@
 ### Known gaps
 
 - Google Slides decks published to the web (`/d/e/<id>/` URLs) have a code
-  path but no verification; ordinary shared decks are verified.
+  path but no verification; ordinary shared decks are verified, across both
+  page-id naming schemes and several URL forms.
 - SlideShare intermittently answers with a bot interstitial. It is detected
   and reported as such, but getting past it needs a JavaScript-capable
   `Fetcher`.

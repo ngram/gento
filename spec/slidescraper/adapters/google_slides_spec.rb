@@ -53,6 +53,30 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
       )
     end
 
+    # A different real deck, whose pages are named "out_s01" and friends
+    # rather than the "g<hex>_N_N" of the other fixture. Nothing in the id
+    # shape can be relied on, so the adapter must not try.
+    context "with a deck whose page ids follow another scheme" do
+      let(:id) { "1MVF6nWVXKlFVjLMnUoCtjkQ8pJBh4knmBcv5kFJn_eY" }
+      let(:fetcher) do
+        StubFetcher.new.stub(htmlpresent_url,
+                             body: fixture("google_slides", "htmlpresent-outline-ids.html"))
+      end
+
+      it "reads every page" do
+        deck = adapter.scrape(url)
+
+        expect(deck.page_count).to eq(18)
+        expect(deck.slides.first.url).to end_with("pageid=out_s01")
+      end
+
+      it "accepts the /mobilepresent URL form" do
+        deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/mobilepresent?slide=id.out_s01")
+
+        expect(deck.page_count).to eq(18)
+      end
+    end
+
     it "raises ExtractionError when the deck is not public" do
       fetcher = StubFetcher.new.stub(htmlpresent_url, body: "<html><body>Sign in</body></html>")
 

@@ -113,6 +113,9 @@ $ npx wrangler deploy
 
 Containers の利用には Workers Paid プラン（$5/月）が必要です。
 
+コンテナイメージをローカルの Docker で検証する手順は
+[docs/verify-container.md](docs/verify-container.md) にまとめています。
+
 ## 開発
 
 ```console
@@ -135,9 +138,10 @@ $ (cd worker && npm test && npm run typecheck)
 - **SlideShare** は稀に JavaScript のボット判定ページを返します。恒常的ではなく、
   短時間に大量アクセスした場合に出やすいものです。gem はこれを検出して
   「スライドが0枚」ではなく専用のエラーメッセージを返します。
-- **Google スライド** は「ウェブに公開」した `/d/e/<id>/` 形式の URL に対応する
-  コードパスを持っていますが、公開設定のデッキが用意できず未検証です。
-  通常の共有 URL（`/d/<id>/`）は検証済みです。
+- **Google スライド** は通常の共有 URL（`/d/<id>/` の `edit` / `mobilepresent` など）を
+  検証済みです。ページ ID の命名は複数の流儀があり（`g<hex>_N_N`、`out_s01`、`p`）、
+  どちらも実データで確認しています。「ウェブに公開」した `/d/e/<id>/` 形式は
+  コードパスはあるものの、公開設定のデッキが用意できず未検証です。
 - Google スライドの画像 URL は `docs.google.com` の export エンドポイントで、
   実体は `*.googleusercontent.com` への 307 リダイレクトです。
 
