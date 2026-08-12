@@ -212,14 +212,23 @@ Codespaces: View Creation Log
 
 `devcontainer` のビルドが失敗していれば、その理由がここに出ます。
 
-続いてリビルドします。コマンドパレットで:
+続いてリビルドします。**ターミナルから実行するのが一番確実です** — iOS の Safari では
+メニューやコマンドパレットのタッチが効かないことがあるためです。
 
-```
-Codespaces: Rebuild Container
+```sh
+gh codespace rebuild --full -c "$CODESPACE_NAME"
 ```
 
-直らない場合は **Full Rebuild Container**（キャッシュを捨てて最初から）を選びます。
-5〜8分かかります。
+`--full` はキャッシュした Docker イメージも捨てて最初からやり直します。
+`$CODESPACE_NAME` は Codespace 内で自動的に設定済みで、`gh` も認証済みです。
+5〜8分かかり、その間セッションは切断されます。完了したらブラウザを再読み込みしてください。
+
+UI から実行する場合はコマンドパレットで `Codespaces: Full Rebuild Container` です。
+コマンドパレットはメニュー以外からも開けます。
+
+- 外付けキーボードがあれば `F1` または `Cmd+Shift+P`
+- 画面上部中央の**コマンドセンター**（Codespace 名が表示されている横長のボックス）を
+  タップし、先頭に `>` を入力する
 
 それでも駄目なら、Codespace を作り直すのが確実です。
 `github.com/codespaces` → 該当の「…」→ **Delete** してから新規作成してください。
