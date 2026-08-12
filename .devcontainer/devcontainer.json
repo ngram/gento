@@ -1,6 +1,12 @@
 {
   "name": "slidescraper",
-  "image": "mcr.microsoft.com/devcontainers/ruby:3.3",
+  // Pinned to bookworm on purpose, not just to a Ruby version. The floating
+  // ":3.3" tag moved to Debian trixie, where the docker-in-docker feature
+  // cannot install its default moby packages — the container build fails and
+  // Codespaces silently falls back to a bare recovery container. Do not drop
+  // the distro suffix. (The other way out is "moby": false on the feature
+  // below, which installs Docker CE instead.)
+  "image": "mcr.microsoft.com/devcontainers/ruby:3.3-bookworm",
 
   "features": {
     // The container image is the point of this environment: web/Dockerfile

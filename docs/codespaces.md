@@ -192,6 +192,30 @@ OAuth ログイン後は、指示だけで作業できます。
 
 ## つまずきやすいところ
 
+**コンテナ作成が `moby-cli ... not available in that distribution` で失敗する**
+
+作成ログにこう出ている場合:
+
+```
+(!) The 'moby' option is not supported on debian 'trixie' because
+    'moby-cli' and related system packages are not available in that distribution.
+ERROR: Feature "Docker (Docker-in-Docker)" failed to install!
+```
+
+ベースイメージの Debian が trixie に上がり、docker-in-docker feature が既定で入れる
+moby パッケージが存在しないためです。コンテナ作成が失敗し、Codespaces は黙って
+リカバリーコンテナ（`base:alpine`）に切り替えます。**その結果が下の「3つとも見つからない」です。**
+
+このリポジトリの `devcontainer.json` はベースイメージを `3.3-bookworm` に固定して
+これを回避しています。**ディストロの接尾辞を外さないでください。**
+浮動タグ（`:3.3`）に戻すと、Debian が次に上がったときに同じ壊れ方をします。
+
+もう一つの回避策は feature 側で moby を無効にすることです（Docker CE が入ります）。
+
+```jsonc
+"ghcr.io/devcontainers/features/docker-in-docker:2": { "moby": false }
+```
+
 **`ruby` / `node` / `bundle` が「3つとも」見つからない**
 
 `.devcontainer/setup.sh` の冒頭で3つとも `MISSING` と出る場合、devcontainer が
