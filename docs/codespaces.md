@@ -192,6 +192,23 @@ OAuth ログイン後は、指示だけで作業できます。
 
 ## つまずきやすいところ
 
+**コンテナ作成が `Failed to fetch the latest artifacts for docker-compose` で失敗する**
+
+```
+(*) Installing docker-compose 2.40.3...
+curl: (56) Connection died, tried 5 times before giving up
+ERROR: Feature "Docker (Docker-in-Docker)" failed to install!
+```
+
+moby 本体の apt インストールは成功した後、feature が**さらに** standalone の
+`docker-compose` バイナリを GitHub releases から取りに行って失敗しています。
+Codespaces のビルド環境からこのダウンロードが通らないことがあります。
+
+このリポジトリの `devcontainer.json` は `"dockerDashComposeVersion": "none"` を
+指定してこの二重インストールを止めています。apt の `moby-compose` パッケージが
+`docker compose`（スペース区切りの v2 プラグイン）を提供するので、これで不足はありません。
+ハイフン付きの `docker-compose` コマンドだけが入らなくなります。
+
 **コンテナ作成が `moby-cli ... not available in that distribution` で失敗する**
 
 作成ログにこう出ている場合:
