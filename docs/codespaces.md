@@ -192,7 +192,39 @@ OAuth ログイン後は、指示だけで作業できます。
 
 ## つまずきやすいところ
 
-**`bundle: command not found` になる**
+**`ruby` / `node` / `bundle` が「3つとも」見つからない**
+
+`.devcontainer/setup.sh` の冒頭で3つとも `MISSING` と出る場合、devcontainer が
+適用されていません。ruby イメージと node feature が効いていれば、少なくとも
+ruby と node は存在するはずだからです。原因は次のどちらかです。
+
+1. devcontainer を追加する前に作った Codespace を使っている
+2. コンテナのビルドに失敗し、Codespaces が**リカバリーモード**で起動した
+
+**ファイルを `git pull` してもコンテナは作り直されません。** リビルドが必要です。
+
+まず何が起きたかを確認します。コマンドパレット（iPhone では左上の ☰ → View →
+Command Palette）で:
+
+```
+Codespaces: View Creation Log
+```
+
+`devcontainer` のビルドが失敗していれば、その理由がここに出ます。
+
+続いてリビルドします。コマンドパレットで:
+
+```
+Codespaces: Rebuild Container
+```
+
+直らない場合は **Full Rebuild Container**（キャッシュを捨てて最初から）を選びます。
+5〜8分かかります。
+
+それでも駄目なら、Codespace を作り直すのが確実です。
+`github.com/codespaces` → 該当の「…」→ **Delete** してから新規作成してください。
+
+**`bundle: command not found` になる（ruby はある）**
 
 まず何が起きているか確認します。
 
