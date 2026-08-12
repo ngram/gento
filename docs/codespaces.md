@@ -192,8 +192,45 @@ OAuth ログイン後は、指示だけで作業できます。
 
 ## つまずきやすいところ
 
+**`bundle: command not found` になる**
+
+まず何が起きているか確認します。
+
+```sh
+which ruby; ruby -v
+which bundle
+ls .ruby-version 2>/dev/null && cat .ruby-version
+```
+
+`ruby` はあるのに `bundle` がない、あるいは `ruby -v` 自体がエラーになる場合、
+**`.ruby-version` がイメージに入っていないパッチバージョンを指している**のが典型です。
+バージョンマネージャ（rvm / rbenv）が有効化に失敗し、gem の実行ファイルが
+PATH に載らないため、`bundle` を含めて何も見つからなくなります。
+
+このリポジトリは `.ruby-version` を置かない方針にしました（gemspec が `>= 3.1` を
+宣言していて、CI は明示的なマトリクスでバージョンを指定するため、重複した固定は不要です）。
+古い Codespace に残っている場合は削除してください。
+
+```sh
+rm -f .ruby-version
+```
+
+削除したら**新しいターミナルを開いて**（バージョンマネージャのフックはシェル起動時に
+走るため、既存のターミナルでは直りません）、セットアップをやり直します。
+
+```sh
+bash .devcontainer/setup.sh
+```
+
+インストール済みのバージョンを確認したい場合:
+
+```sh
+rbenv versions 2>/dev/null || rvm list 2>/dev/null || gem env | head -20
+```
+
 **`postCreateCommand` が失敗して依存が入っていない**
-ターミナルで `bash .devcontainer/setup.sh` を手で再実行してください。
+`bash .devcontainer/setup.sh` を手で再実行してください。冒頭で ruby / bundler / node の
+所在を表示し、`bundle` が見つからない場合は原因の候補を出して止まります。
 
 **`docker build` が `web/Gemfile.lock not found` で落ちる**
 `web/` をビルドコンテキストにしています。リポジトリのルートで `-f web/Dockerfile ... .` の形で。
