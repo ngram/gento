@@ -96,18 +96,59 @@
       border-radius: var(--radius);
     }
 
-    .deck-meta { margin-bottom: 1.5rem; }
+    .deck-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
     .deck-meta h2 { margin: 0 0 .25rem; font-size: 1.2rem; }
     .deck-meta p { margin: 0; color: var(--muted); font-size: .9rem; }
     .deck-meta a { color: var(--accent); }
 
+    .view-toggle {
+      display: flex;
+      flex: none;
+      padding: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .view-toggle button {
+      padding: .35rem .9rem;
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      border-radius: calc(var(--radius) - 3px);
+    }
+
+    .view-toggle button[aria-pressed="true"] {
+      color: #fff;
+      background: var(--accent);
+    }
+
     .slides {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
       gap: 1rem;
       padding: 0;
       margin: 0;
       list-style: none;
+    }
+
+    .slides[data-view="grid"] {
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    }
+
+    /* Continuous read: one column, page-sized, centred. */
+    .slides[data-view="scroll"] {
+      grid-template-columns: minmax(0, 52rem);
+      justify-content: center;
+      gap: 1.5rem;
     }
 
     .slides li {
@@ -124,12 +165,118 @@
       background: var(--bg);
     }
 
+    .slides .slide-link {
+      display: block;
+      cursor: zoom-in;
+      /* An image that fails to load — an expired signed URL, a blocked
+         referrer — would otherwise collapse its tile to nothing, leaving a
+         page that cannot be seen or clicked. */
+      min-height: 4rem;
+      background: var(--bg);
+    }
+
+    .slides .slide-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
     .slides .n {
       display: block;
       padding: .4rem .7rem;
       color: var(--muted);
       font-size: .8rem;
       border-top: 1px solid var(--border);
+    }
+
+    /* Lightbox ---------------------------------------------------------- */
+
+    .lightbox {
+      width: 100vw;
+      max-width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .lightbox::backdrop { background: rgba(0, 0, 0, .82); }
+
+    /* Only when open: dialog:not([open]) must keep the UA's display:none. */
+    .lightbox[open] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox img {
+      display: block;
+      width: auto;
+      height: auto;
+      /* Leave room either side so the arrows sit beside the slide rather
+         than on top of its content. */
+      max-width: min(100vw - 9rem, 110rem);
+      max-height: 92dvh;
+      border-radius: 6px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+    }
+
+    .lightbox button {
+      position: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: rgba(0, 0, 0, .45);
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .lightbox button:disabled { opacity: .25; cursor: default; }
+
+    .lb-close {
+      top: 1rem;
+      right: 1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .lb-nav {
+      top: 50%;
+      width: 3rem;
+      height: 3rem;
+      font-size: 2rem;
+      line-height: 1;
+      transform: translateY(-50%);
+    }
+
+    .lb-prev { left: 1rem; }
+    .lb-next { right: 1rem; }
+
+    .lb-counter {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      margin: 0;
+      padding: .3rem .9rem;
+      color: #fff;
+      font-size: .85rem;
+      background: rgba(0, 0, 0, .55);
+      border-radius: 999px;
+      transform: translateX(-50%);
+    }
+
+    /* On a phone there is no room for gutters, so the arrows overlay the
+       slide edges instead. */
+    @media (max-width: 40rem) {
+      .lightbox img { max-width: 96vw; max-height: 84dvh; }
+      .lb-nav { width: 2.5rem; height: 2.5rem; font-size: 1.5rem; }
+      .lb-prev { left: .35rem; }
+      .lb-next { right: .35rem; }
     }
 
     footer {

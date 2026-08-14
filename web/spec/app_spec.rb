@@ -90,6 +90,45 @@ RSpec.describe Slidescraper::Web::App do
       expect(last_response.body).not_to include("テスト & デッキ")
     end
 
+    it "renders each page as a link to its own image, so it works without JS" do
+      stub_client(deck)
+
+      get "/", url: deck_url
+
+      expect(last_response.body).to include(
+        %(<a class="slide-link" href="https://files.speakerdeck.com/p/1.jpg")
+      )
+    end
+
+    it "ships the viewer controls with the deck" do
+      stub_client(deck)
+
+      get "/", url: deck_url
+
+      expect(last_response.body).to include(%(<dialog class="lightbox"))
+      expect(last_response.body).to include(%(<script src="/viewer.js"))
+      expect(last_response.body).to include(%(data-view="grid"))
+    end
+
+    # Hidden in the markup and revealed by the script: with JS off there is
+    # only one mode, so offering to switch would be a lie.
+    it "hides the mode toggle until the script enables it" do
+      stub_client(deck)
+
+      get "/", url: deck_url
+
+      expect(last_response.body).to match(/<div class="view-toggle".*hidden/m)
+    end
+
+    it "does not render viewer controls when there is no deck" do
+      get "/"
+
+      # The lightbox styles live in the layout and are always present; what
+      # must be absent is the dialog itself and the script that drives it.
+      expect(last_response.body).not_to include("<dialog")
+      expect(last_response.body).not_to include("viewer.js")
+    end
+
     it "shows a 422 for an unsupported URL" do
       stub_client(Slidescraper::UnsupportedURLError.new("https://example.com/x"))
 
@@ -155,6 +194,14 @@ RSpec.describe Slidescraper::Web::App do
 
       expect(client).to have_received(:scrape).once
     end
+  end
+
+  it "serves the viewer script as JavaScript" do
+    get "/viewer.js"
+
+    expect(last_response.status).to eq(200)
+    expect(last_response.headers["content-type"]).to include("javascript")
+    expect(last_response.body).to include("showModal")
   end
 
   it "returns JSON for unknown routes" do

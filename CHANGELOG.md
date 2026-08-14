@@ -17,6 +17,13 @@
 - Proxy support in the net/http fetcher, honouring `HTTPS_PROXY` (which
   net/http ignores on its own) and bypassing it for private addresses.
 
+- The demo's viewer: a lightbox on clicking a page, with arrow-key paging,
+  and a switch between the thumbnail grid and a continuous vertical read.
+  The choice is remembered. Built on `<dialog>` with no dependencies, and
+  layered over markup that still works with JavaScript off.
+- `SLIDESCRAPER_USER_AGENT`, so a deployed container can change how it
+  identifies itself without a rebuild.
+
 ### Fixed
 
 - The tag scanner consumed element content, so a tag nested inside another of
@@ -31,8 +38,8 @@
 
 ### Known gaps
 
-- SlideShare intermittently answers with a bot interstitial. It is detected
-  and reported as such, but getting past it needs a JavaScript-capable
-  `Fetcher`.
+- SlideShare's bot protection decides on the caller's IP reputation, so from
+  a datacenter address it can refuse every request. Detected and reported as
+  itself; getting past it needs a JavaScript-capable `Fetcher`.
 - The signed `viewpage` URLs returned for published Google Slides decks
   expire; how long they last has not been measured.

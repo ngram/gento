@@ -20,20 +20,31 @@
 <% end %>
 
 <% if @deck %>
-  <div class="deck-meta">
-    <h2><%= h(@deck.title || "(no title)") %></h2>
-    <p>
-      <%= h(@deck.provider) %>
-      <% if @deck.author %>・<%= h(@deck.author) %><% end %>
-      ・<%= @deck.page_count %> ページ
-      ・<a href="<%= h(@deck.source_url) %>" rel="noopener noreferrer">元ページ</a>
-    </p>
+  <div class="deck-bar">
+    <div class="deck-meta">
+      <h2><%= h(@deck.title || "(no title)") %></h2>
+      <p>
+        <%= h(@deck.provider) %>
+        <% if @deck.author %>・<%= h(@deck.author) %><% end %>
+        ・<%= @deck.page_count %> ページ
+        ・<a href="<%= h(@deck.source_url) %>" rel="noopener noreferrer">元ページ</a>
+      </p>
+    </div>
+
+    <%# Hidden until the script runs: without JS the grid is the only mode. %>
+    <div class="view-toggle" id="view-toggle" role="group" aria-label="表示モード" hidden>
+      <button type="button" data-view="grid" aria-pressed="true">一覧</button>
+      <button type="button" data-view="scroll" aria-pressed="false">連続</button>
+    </div>
   </div>
 
-  <ul class="slides">
+  <ul class="slides" id="slides" data-view="grid">
     <% @deck.slides.each do |slide| %>
       <li>
-        <a href="<%= h(slide.url) %>" rel="noopener noreferrer">
+        <%# A plain link, so pages remain openable with JavaScript off.
+            The viewer script intercepts the click to open the lightbox. %>
+        <a class="slide-link" href="<%= h(slide.url) %>" rel="noopener noreferrer"
+           data-index="<%= slide.number - 1 %>">
           <img src="<%= h(slide.url) %>" alt="スライド <%= slide.number %> ページ目"
                loading="lazy" referrerpolicy="no-referrer">
         </a>
@@ -41,4 +52,16 @@
       </li>
     <% end %>
   </ul>
+
+  <%# <dialog> brings Esc-to-close and a focus trap with it, so the script
+      does not have to reimplement either. %>
+  <dialog class="lightbox" id="lightbox" aria-label="スライド拡大表示">
+    <button type="button" class="lb-close" id="lb-close" aria-label="閉じる">×</button>
+    <button type="button" class="lb-nav lb-prev" id="lb-prev" aria-label="前のページ">‹</button>
+    <img id="lb-image" alt="" referrerpolicy="no-referrer">
+    <button type="button" class="lb-nav lb-next" id="lb-next" aria-label="次のページ">›</button>
+    <p class="lb-counter" id="lb-counter" aria-live="polite"></p>
+  </dialog>
+
+  <script src="/viewer.js" defer></script>
 <% end %>
