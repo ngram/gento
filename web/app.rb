@@ -33,8 +33,18 @@ module Slidescraper
       )
 
       helpers do
+        # SLIDESCRAPER_USER_AGENT lets a deployment change how it identifies
+        # itself without a rebuild. Worth having because bot protection —
+        # SlideShare's especially — reacts to the client as much as to the
+        # request, and a container is exactly where you cannot edit code to
+        # try something else.
         def client
-          @client ||= Slidescraper::Client.new
+          @client ||= Slidescraper::Client.new(fetcher: fetcher)
+        end
+
+        def fetcher
+          options = { user_agent: ENV.fetch("SLIDESCRAPER_USER_AGENT", nil) }.compact
+          Slidescraper::NetHttpFetcher.new(**options)
         end
 
         def h(text)

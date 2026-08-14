@@ -30,6 +30,28 @@ RSpec.describe Slidescraper::Web::App do
     client
   end
 
+  describe "user agent configuration" do
+    around do |example|
+      original = ENV.fetch("SLIDESCRAPER_USER_AGENT", nil)
+      example.run
+    ensure
+      original.nil? ? ENV.delete("SLIDESCRAPER_USER_AGENT") : ENV["SLIDESCRAPER_USER_AGENT"] = original
+    end
+
+    it "defaults to the gem's own user agent" do
+      ENV.delete("SLIDESCRAPER_USER_AGENT")
+
+      expect(app.new!.send(:fetcher).user_agent)
+        .to eq(Slidescraper::NetHttpFetcher::DEFAULT_USER_AGENT)
+    end
+
+    it "takes SLIDESCRAPER_USER_AGENT when set" do
+      ENV["SLIDESCRAPER_USER_AGENT"] = "Mozilla/5.0 (compatible; example)"
+
+      expect(app.new!.send(:fetcher).user_agent).to eq("Mozilla/5.0 (compatible; example)")
+    end
+  end
+
   describe "GET /healthz" do
     it "reports ok for container health checks" do
       get "/healthz"

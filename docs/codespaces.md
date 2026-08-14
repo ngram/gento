@@ -321,5 +321,29 @@ rbenv versions 2>/dev/null || rvm list 2>/dev/null || gem env | head -20
 `Edit Cloudflare Workers` テンプレートのトークンでも、Containers には追加の権限が要る場合があります。
 エラーメッセージが不足しているスコープを名指しするので、それに合わせてトークンを作り直してください。
 
-**SlideShare だけ疎通確認に失敗する**
-エラーに `bot challenge` が含まれていれば仕様どおりの挙動です。時間をおいて再実行してください。
+**SlideShare だけ `bot challenge` で失敗する**
+
+まず、コンテナ固有の問題かネットワーク全体かを切り分けます。Codespace のターミナルで:
+
+```sh
+curl -sS -A "slidescraper/0.1.0" \
+  "https://www.slideshare.net/slideshow/ansiblenetwork201808/108457145" \
+  | grep -c "Client Challenge"
+```
+
+`1` が返れば、gem ではなく**この Codespace の出口 IP がボット判定を受けています**。
+SlideShare の保護はリクエストの中身より接続元の評価で判断するため、
+データセンターの IP（Codespaces は Azure）は恒常的に弾かれることがあります。
+ヘッダを変えても通らないのが普通です。
+
+`0` が返るのに gem だけ失敗する場合は User-Agent の可能性があります。
+デモアプリは環境変数で差し替えられるので、再ビルドせずに試せます。
+
+```sh
+docker run --rm -p 8080:8080 \
+  -e SLIDESCRAPER_USER_AGENT="Mozilla/5.0 (compatible; slidescraper/0.1.0)" \
+  slidescraper-web
+```
+
+どちらでも通らない場合、残る手段は JavaScript を実行できる `Slidescraper::Fetcher` を
+差し込むことです（gem 本体は無改造で載ります）。他の3サービスは影響を受けません。
