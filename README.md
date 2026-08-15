@@ -204,6 +204,11 @@ $ docker run --rm -p 8080:8080 \
     slidescraper-web
 ```
 
+## 利用にあたっての注意
+
+**対象サービスの利用規約を確認し、遵守する責任は利用者にあります。**
+[docs/legal.md](docs/legal.md) を読んでから使ってください。
+
 ## ライセンス
 
 MIT License. [LICENSE.txt](LICENSE.txt) を参照してください。
