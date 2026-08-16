@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Slidescraper::Client do
-  let(:url) { "https://speakerdeck.com/axbom/digital-ethics-as-a-driver-of-design-innovation" }
+  let(:url) { "https://speakerdeck.com/example/example-deck" }
   let(:fetcher) do
     StubFetcher.new
                .stub(url, body: fixture("speaker_deck", "deck.html"))
@@ -13,7 +13,7 @@ RSpec.describe Slidescraper::Client do
       deck = described_class.new(fetcher: fetcher).scrape(url)
 
       expect(deck.provider).to eq("speaker_deck")
-      expect(deck.page_count).to eq(79)
+      expect(deck.page_count).to eq(6)
     end
 
     it "raises UnsupportedURLError for an unknown host" do
@@ -47,7 +47,7 @@ RSpec.describe Slidescraper::Client do
       deck = described_class.new(fetcher: fetcher).scrape(url)
       data = JSON.parse(deck.to_json)
 
-      expect(data["page_count"]).to eq(79)
+      expect(data["page_count"]).to eq(6)
       expect(data["slides"].first).to include("number" => 1)
       expect(data["source_url"]).to eq(url)
     end

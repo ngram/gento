@@ -3,10 +3,10 @@
 RSpec.describe Slidescraper::Adapters::SpeakerDeck do
   subject(:adapter) { described_class.new(fetcher: fetcher) }
 
-  # Captured from a real 79-page deck. The page also carries cover images for
-  # 34 other decks, which is what makes the id filtering worth testing.
-  let(:url) { "https://speakerdeck.com/axbom/digital-ethics-as-a-driver-of-design-innovation" }
-  let(:deck_id) { "e751d96689af4d41a0cc55c74507f40e" }
+  # The fixture holds a 6-page deck, alongside cover images for two other
+  # decks — which is what makes the id filtering worth testing.
+  let(:url) { "https://speakerdeck.com/example/example-deck" }
+  let(:deck_id) { "aaaaaaaabbbbccccddddeeeeffff0000" }
   let(:fetcher) do
     StubFetcher.new
                .stub(url, body: fixture("speaker_deck", "deck.html"))
@@ -27,12 +27,12 @@ RSpec.describe Slidescraper::Adapters::SpeakerDeck do
     it "returns every page in order" do
       deck = adapter.scrape(url)
 
-      expect(deck.page_count).to eq(79)
-      expect(deck.slides.map(&:number)).to eq((1..79).to_a)
+      expect(deck.page_count).to eq(6)
+      expect(deck.slides.map(&:number)).to eq((1..6).to_a)
       expect(deck.slides.first.url)
         .to eq("https://files.speakerdeck.com/presentations/#{deck_id}/slide_0.jpg")
       expect(deck.slides.last.url)
-        .to eq("https://files.speakerdeck.com/presentations/#{deck_id}/slide_78.jpg")
+        .to eq("https://files.speakerdeck.com/presentations/#{deck_id}/slide_5.jpg")
     end
 
     it "excludes the recommended decks shown alongside this one" do
@@ -44,21 +44,21 @@ RSpec.describe Slidescraper::Adapters::SpeakerDeck do
     it "excludes the low-resolution preview images" do
       deck = adapter.scrape(url)
 
-      expect(deck.slides.map(&:url)).to all(satisfy { |url| !url.include?("preview_slide") })
+      expect(deck.slides.map(&:url)).to all(exclude_substring("preview_slide"))
     end
 
     it "deduplicates pages that also appear with a cache-busting query" do
       deck = adapter.scrape(url)
 
-      expect(deck.slides.map(&:url).uniq.size).to eq(79)
-      expect(deck.slides.map(&:url)).to all(satisfy { |url| !url.include?("?") })
+      expect(deck.slides.map(&:url).uniq.size).to eq(6)
+      expect(deck.slides.map(&:url)).to all(exclude_substring("?"))
     end
 
     it "prefers oEmbed for title and author" do
       deck = adapter.scrape(url)
 
-      expect(deck.title).to eq("Digital Ethics as a Driver of Design Innovation")
-      expect(deck.author).to eq("Per Axbom")
+      expect(deck.title).to eq("Example Deck Title")
+      expect(deck.author).to eq("Example Author")
       expect(deck.provider).to eq("speaker_deck")
     end
 
@@ -67,8 +67,8 @@ RSpec.describe Slidescraper::Adapters::SpeakerDeck do
 
       deck = described_class.new(fetcher: fetcher).scrape(url)
 
-      expect(deck.page_count).to eq(79)
-      expect(deck.title).to eq("Digital Ethics as a Driver of Design Innovation")
+      expect(deck.page_count).to eq(6)
+      expect(deck.title).to eq("Example Deck Title")
     end
 
     it "raises ExtractionError when the page holds no deck" do

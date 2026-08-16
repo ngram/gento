@@ -6,12 +6,6 @@ ENV["RACK_ENV"] = "test"
 require "rack/test"
 require_relative "../app"
 
-FIXTURES = File.expand_path("../../spec/fixtures", __dir__)
-
-def gem_fixture(*path)
-  File.read(File.join(FIXTURES, *path), encoding: "UTF-8")
-end
-
 RSpec.configure do |config|
   config.include Rack::Test::Methods
 

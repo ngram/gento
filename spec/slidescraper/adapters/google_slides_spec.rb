@@ -3,8 +3,8 @@
 RSpec.describe Slidescraper::Adapters::GoogleSlides do
   subject(:adapter) { described_class.new(fetcher: fetcher) }
 
-  # Captured from a real, publicly shared 11-page presentation.
-  let(:id) { "1IvfYbYKyTRT9da16vlsLLqzpsOqxSHf_Y8tY1lmGA_w" }
+  # The fixture holds a 4-page, publicly shared presentation.
+  let(:id) { "1ExampleExamplePresentationIdAAAA" }
   let(:url) { "https://docs.google.com/presentation/d/#{id}/edit" }
   let(:htmlpresent_url) { "https://docs.google.com/presentation/d/#{id}/htmlpresent" }
   let(:fetcher) do
@@ -15,35 +15,35 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
     it "builds one PNG export URL per page, in order" do
       deck = adapter.scrape(url)
 
-      expect(deck.page_count).to eq(11)
+      expect(deck.page_count).to eq(4)
       expect(deck.slides.first.url).to eq(
-        "https://docs.google.com/presentation/d/#{id}/export/png?id=#{id}&pageid=g1080cddb5a_2_84"
+        "https://docs.google.com/presentation/d/#{id}/export/png?id=#{id}&pageid=g1a2b3c4d5_0_0"
       )
-      expect(deck.slides.last.url).to end_with("pageid=g1080cddb5a_2_165")
+      expect(deck.slides.last.url).to end_with("pageid=g1a2b3c4d5_0_18")
     end
 
     it "counts each page once" do
       deck = adapter.scrape(url)
 
-      expect(deck.slides.map(&:url).uniq.size).to eq(11)
+      expect(deck.slides.map(&:url).uniq.size).to eq(4)
     end
 
     it "strips the Google Slides suffix from the title" do
-      expect(adapter.scrape(url).title).to eq("Google Presentation")
+      expect(adapter.scrape(url).title).to eq("Example Presentation")
     end
 
     it "accepts any URL form that names the presentation" do
       %w[edit preview present].each do |suffix|
         deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/#{suffix}")
-        expect(deck.page_count).to eq(11)
+        expect(deck.page_count).to eq(4)
       end
     end
 
-    # A different real deck, whose pages are named "out_s01" and friends
-    # rather than the "g<hex>_N_N" of the other fixture. Nothing in the id
-    # shape can be relied on, so the adapter must not try.
+    # Pages are named "out_s01" and friends here rather than the "g<hex>_N_N"
+    # of the other fixture. Nothing in the id shape can be relied on, so the
+    # adapter must not try.
     context "with a deck whose page ids follow another scheme" do
-      let(:id) { "1MVF6nWVXKlFVjLMnUoCtjkQ8pJBh4knmBcv5kFJn_eY" }
+      let(:id) { "1ExampleOutlineIdsPresentationBBB" }
       let(:fetcher) do
         StubFetcher.new.stub(htmlpresent_url,
                              body: fixture("google_slides", "htmlpresent-outline-ids.html"))
@@ -52,22 +52,19 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
       it "reads every page" do
         deck = adapter.scrape(url)
 
-        expect(deck.page_count).to eq(18)
+        expect(deck.page_count).to eq(3)
         expect(deck.slides.first.url).to end_with("pageid=out_s01")
       end
 
       it "accepts the /mobilepresent URL form" do
         deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/mobilepresent?slide=id.out_s01")
 
-        expect(deck.page_count).to eq(18)
+        expect(deck.page_count).to eq(3)
       end
     end
 
-    # Captured from a real deck published with File > Share > Publish to web.
     context "with a deck published to the web" do
-      let(:id) do
-        "2PACX-1vQAvPVdKl0vSuMFEn6FYlt9Ka7KmEueXIYcAkUGzlEojVEtsRhOVD8esNXSKshSMdUsFspGDmKxNjD-"
-      end
+      let(:id) { "2PACX-1vExamplePublishedPresentationIdCCCC" }
       let(:url) { "https://docs.google.com/presentation/d/e/#{id}/pub?start=false&slide=id.p" }
       let(:fetcher) do
         StubFetcher.new.stub("https://docs.google.com/presentation/d/e/#{id}/htmlpresent",
@@ -77,8 +74,8 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
       it "reads every page" do
         deck = adapter.scrape(url)
 
-        expect(deck.page_count).to eq(53)
-        expect(deck.title).to include("自作OS")
+        expect(deck.page_count).to eq(5)
+        expect(deck.title).to eq("Example Presentation")
       end
 
       # /export/png answers 404 for published decks whatever page id it is
@@ -96,13 +93,13 @@ RSpec.describe Slidescraper::Adapters::GoogleSlides do
         deck = adapter.scrape(url)
 
         expect(deck.slides.first.url).to include("pageid=p&")
-        expect(deck.slides[1].url).to include("pageid=g375f5c7affe_0_42&")
+        expect(deck.slides[1].url).to include("pageid=g9f8e7d6c5_0_4&")
       end
 
       it "counts each page once" do
         deck = adapter.scrape(url)
 
-        expect(deck.slides.map(&:url).uniq.size).to eq(53)
+        expect(deck.slides.map(&:url).uniq.size).to eq(5)
       end
 
       it "raises ExtractionError when the deck is no longer published" do
