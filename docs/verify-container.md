@@ -177,8 +177,10 @@ docker build -f web/Dockerfile \
 `docker run -e HTTPS_PROXY=... ` を渡すだけで通ります。
 
 **4-4 で SlideShare だけ失敗する**
-`bot challenge` を含むエラーが返っていれば、SlideShare 側の断続的な
-ボット判定に当たっています。時間をおいて再実行してください。仕様どおりの挙動です。
+`bot challenge` を含むエラーが返っていれば、SlideShare 側のボット判定に
+当たっています。判定は接続元 IP の評価で決まるため、データセンターの IP からは
+恒常的に弾かれます。仕様どおりの挙動です
+（[docs/verification.md](verification.md#slideshare-のボット判定について)）。
 
 ## Cloudflare へのデプロイまで確認する場合
 

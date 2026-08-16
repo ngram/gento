@@ -31,8 +31,8 @@ Safari で `github.com/codespaces/new` を開く → リポジトリと**ブラ�
 3つのスイートがあります。合計 **128件**です。
 
 ```sh
-bundle exec rspec                          # gem: 97 examples
-(cd web && bundle exec rspec)              # デモアプリ: 16 examples
+bundle exec rspec                          # gem: 102 examples
+(cd web && bundle exec rspec)              # デモアプリ: 23 examples
 (cd worker && npm test && npm run typecheck)   # Worker: 15 tests
 ```
 
