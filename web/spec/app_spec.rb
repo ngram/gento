@@ -52,6 +52,29 @@ RSpec.describe Slidescraper::Web::App do
     end
   end
 
+  describe "robots.txt configuration" do
+    around do |example|
+      original = ENV.fetch("SLIDESCRAPER_ROBOTS", nil)
+      example.run
+    ensure
+      original.nil? ? ENV.delete("SLIDESCRAPER_ROBOTS") : ENV["SLIDESCRAPER_ROBOTS"] = original
+    end
+
+    it "is on when nothing is configured" do
+      ENV.delete("SLIDESCRAPER_ROBOTS")
+
+      expect(app.new!.send(:robots?)).to be(true)
+    end
+
+    it "is off when the deployment turns it off" do
+      %w[0 false off no OFF].each do |value|
+        ENV["SLIDESCRAPER_ROBOTS"] = value
+
+        expect(app.new!.send(:robots?)).to be(false)
+      end
+    end
+  end
+
   describe "GET /healthz" do
     it "reports ok for container health checks" do
       get "/healthz"
@@ -145,6 +168,15 @@ RSpec.describe Slidescraper::Web::App do
 
       expect(last_response.status).to eq(502)
     end
+
+    it "shows a 403 when robots.txt disallows the deck" do
+      stub_client(Slidescraper::RobotsDisallowedError.new("robots.txt disallows /x"))
+
+      get "/", url: deck_url
+
+      expect(last_response.status).to eq(403)
+      expect(last_response.body).to include("robots.txt")
+    end
   end
 
   describe "GET /api/decks" do
@@ -182,6 +214,16 @@ RSpec.describe Slidescraper::Web::App do
       get "/api/decks", url: deck_url
 
       expect(last_response.status).to eq(502)
+    end
+
+    # Not a failure: the host said not to, and we did not.
+    it "maps a robots.txt refusal to 403" do
+      stub_client(Slidescraper::RobotsDisallowedError.new("robots.txt disallows /x"))
+
+      get "/api/decks", url: deck_url
+
+      expect(last_response.status).to eq(403)
+      expect(JSON.parse(last_response.body)["error"]).to include("robots.txt")
     end
   end
 

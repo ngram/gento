@@ -7,6 +7,8 @@ require_relative "slidescraper/entities"
 require_relative "slidescraper/html"
 require_relative "slidescraper/response"
 require_relative "slidescraper/fetcher"
+require_relative "slidescraper/robots"
+require_relative "slidescraper/robots_fetcher"
 require_relative "slidescraper/slide"
 require_relative "slidescraper/deck"
 require_relative "slidescraper/adapters/base"
@@ -25,8 +27,10 @@ require_relative "slidescraper/client"
 module Slidescraper
   class << self
     # Convenience wrapper around Client#scrape for one-off calls.
-    def scrape(url, fetcher: nil, registry: nil)
-      Client.new(fetcher: fetcher, registry: registry).scrape(url)
+    #
+    # robots: false skips the robots.txt check, which is on by default.
+    def scrape(url, fetcher: nil, registry: nil, robots: true)
+      Client.new(fetcher: fetcher, registry: registry, robots: robots).scrape(url)
     end
 
     def supports?(url)

@@ -17,7 +17,7 @@ module Slidescraper
     def initialize(stdout: $stdout, stderr: $stderr)
       @stdout = stdout
       @stderr = stderr
-      @options = { format: :json, pretty: true }
+      @options = { format: :json, pretty: true, robots: true }
     end
 
     def run(argv)
@@ -37,7 +37,7 @@ module Slidescraper
     private
 
     def scrape_all(urls)
-      client = Client.new(fetcher: build_fetcher)
+      client = Client.new(fetcher: build_fetcher, robots: @options[:robots])
       status = EXIT_SUCCESS
 
       urls.each do |url|
@@ -99,6 +99,10 @@ module Slidescraper
 
       opts.on("-A", "--user-agent STRING", "User-Agent to send") do |agent|
         @options[:user_agent] = agent
+      end
+
+      opts.on("--[no-]robots", "Obey the host's robots.txt (default: on)") do |robots|
+        @options[:robots] = robots
       end
     end
 

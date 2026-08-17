@@ -13,7 +13,7 @@
 ## 事前チェック
 
 ```console
-$ bundle exec rspec && bundle exec rubocop     # 102 examples / 0 offenses
+$ bundle exec rspec && bundle exec rubocop     # 151 examples / 0 offenses
 $ gem build slidescraper.gemspec               # 警告が出ないこと
 $ gem install ./slidescraper-0.1.0.gem         # 手元で入るか
 $ slidescraper --version

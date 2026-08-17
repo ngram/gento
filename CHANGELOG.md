@@ -14,6 +14,12 @@
 - Charset detection, so Shift_JIS and EUC-JP decks decode correctly.
 - `slidescraper` CLI, printing JSON or one image URL per line.
 
+- robots.txt, obeyed by default (RFC 9309). A `RobotsFetcher` wraps whatever
+  fetcher is in use, so every request an adapter makes is checked, not just
+  the deck page. `robots: false`, `--no-robots` and `SLIDESCRAPER_ROBOTS=off`
+  turn it off. A robots.txt that cannot be read is treated as a refusal
+  rather than as permission.
+
 - Proxy support in the net/http fetcher, honouring `HTTPS_PROXY` (which
   net/http ignores on its own) and bypassing it for private addresses.
 
@@ -43,3 +49,5 @@
   itself; getting past it needs a JavaScript-capable `Fetcher`.
 - The signed `viewpage` URLs returned for published Google Slides decks
   expire; how long they last has not been measured.
+- The robots.txt check does not follow redirects: the wrapped fetcher handles
+  those internally, so a redirect into a disallowed path is not caught.

@@ -35,4 +35,12 @@ module Slidescraper
 
   # We followed more redirects than the fetcher allows.
   class TooManyRedirectsError < FetchError; end
+
+  # The host's robots.txt does not allow this client to fetch this path — or
+  # could not be read, which comes to the same thing.
+  #
+  # A FetchError because it is a request that did not happen, which also means
+  # an optional extra like an oEmbed lookup degrades instead of failing the
+  # whole scrape.
+  class RobotsDisallowedError < FetchError; end
 end

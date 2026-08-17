@@ -39,12 +39,18 @@ module Slidescraper
         # request, and a container is exactly where you cannot edit code to
         # try something else.
         def client
-          @client ||= Slidescraper::Client.new(fetcher: fetcher)
+          @client ||= Slidescraper::Client.new(fetcher: fetcher, robots: robots?)
         end
 
         def fetcher
           options = { user_agent: ENV.fetch("SLIDESCRAPER_USER_AGENT", nil) }.compact
           Slidescraper::NetHttpFetcher.new(**options)
+        end
+
+        # robots.txt is obeyed unless the operator of this deployment turns it
+        # off, which is their call to make and their responsibility to own.
+        def robots?
+          !%w[0 false off no].include?(ENV.fetch("SLIDESCRAPER_ROBOTS", "on").downcase)
         end
 
         def h(text)
@@ -87,6 +93,9 @@ module Slidescraper
         rescue Slidescraper::UnsupportedURLError, Slidescraper::ExtractionError => e
           # The request named something we cannot turn into slides.
           json_error(422, e.message)
+        rescue Slidescraper::RobotsDisallowedError => e
+          # The host has said not to. Nothing went wrong; we chose not to ask.
+          json_error(403, e.message)
         rescue Slidescraper::FetchError => e
           # The slide host is the one having a bad day, not us.
           json_error(502, e.message)
@@ -111,6 +120,10 @@ module Slidescraper
         erb :index
       rescue Slidescraper::UnsupportedURLError, Slidescraper::ExtractionError => e
         status 422
+        @error = e.message
+        erb :index
+      rescue Slidescraper::RobotsDisallowedError => e
+        status 403
         @error = e.message
         erb :index
       rescue Slidescraper::FetchError => e

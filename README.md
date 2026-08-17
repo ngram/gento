@@ -57,6 +57,25 @@ https://files.speakerdeck.com/presentations/.../slide_0.jpg
 ...
 ```
 
+### robots.txt
+
+**取得先の `robots.txt` を既定で参照し、拒否されているパスは取りに行きません。**
+デッキページだけでなく、アダプタが出すすべてのリクエスト（oEmbed、embed ビューなど）が対象です。
+
+```ruby
+Slidescraper.scrape(url)                 # robots.txt に従う（既定）
+Slidescraper.scrape(url, robots: false)  # 従わない（判断は利用者の責任）
+```
+
+```console
+$ slidescraper --no-robots https://speakerdeck.com/user/talk
+```
+
+拒否された場合は `Slidescraper::RobotsDisallowedError` になります。
+`robots.txt` 自体を読めなかったとき（5xx・429・接続失敗）も、RFC 9309 に従って拒否扱いです。
+
+詳細は [docs/robots.md](docs/robots.md) を参照してください。
+
 ### HTTP クライアントの差し替え
 
 通信はすべて `Slidescraper::Fetcher` を経由するので、独自の HTTP スタックを差し込めます。
@@ -72,6 +91,7 @@ Slidescraper.scrape(url, fetcher: MyFetcher.new)
 | 例外 | 起きるとき |
 | --- | --- |
 | `Slidescraper::UnsupportedURLError` | 対応アダプタのない URL |
+| `Slidescraper::RobotsDisallowedError` | `robots.txt` が許可していない（`FetchError` の一種） |
 | `Slidescraper::FetchError` | 取得に失敗（`ResponseError` を含む） |
 | `Slidescraper::ExtractionError` | 取得はできたがページを取り出せない |
 
@@ -88,6 +108,7 @@ Slidescraper.scrape(url, fetcher: MyFetcher.new)
 
 ## ドキュメント
 
+- [robots.txt の扱い](docs/robots.md) — 判定ルール、無効化、各サービスの実際の内容
 - [設計方針](docs/design.md) — 依存ゼロにした理由、Fetcher の差し替え、アダプタの足し方
 - [検証状況と既知の制限](docs/verification.md) — サービスごとの注意点、SlideShare のボット判定
 - [デモ Web サービス](docs/demo.md) — `web/` の動かしかたと Cloudflare へのデプロイ
@@ -98,9 +119,9 @@ Slidescraper.scrape(url, fetcher: MyFetcher.new)
 
 ```console
 $ bundle install
-$ bundle exec rspec      # gem         102 examples
+$ bundle exec rspec      # gem         151 examples
 $ bundle exec rubocop
-$ (cd web && bundle exec rspec)                 # デモアプリ 23 examples
+$ (cd web && bundle exec rspec)                 # デモアプリ 27 examples
 $ (cd worker && npm test && npm run typecheck)  # Worker     15 tests
 ```
 

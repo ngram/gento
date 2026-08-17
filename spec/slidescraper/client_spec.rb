@@ -27,6 +27,39 @@ RSpec.describe Slidescraper::Client do
     end
   end
 
+  describe "robots.txt" do
+    it "is obeyed by default" do
+      fetcher.stub("https://speakerdeck.com/robots.txt",
+                   body: "User-agent: *\nDisallow: /example/\n",
+                   headers: { "content-type" => "text/plain" })
+
+      expect { described_class.new(fetcher: fetcher).scrape(url) }
+        .to raise_error(Slidescraper::RobotsDisallowedError)
+    end
+
+    it "is skipped when asked" do
+      fetcher.stub("https://speakerdeck.com/robots.txt",
+                   body: "User-agent: *\nDisallow: /\n",
+                   headers: { "content-type" => "text/plain" })
+
+      client = described_class.new(fetcher: fetcher, robots: false)
+
+      expect(client.scrape(url).page_count).to eq(6)
+      expect(fetcher).not_to be_requested("https://speakerdeck.com/robots.txt")
+    end
+
+    it "wraps an injected fetcher rather than trusting it to check" do
+      expect(described_class.new(fetcher: fetcher)).to be_robots
+      expect(described_class.new(fetcher: fetcher, robots: false)).not_to be_robots
+    end
+
+    it "does not stack a second check on a fetcher that already has one" do
+      wrapped = Slidescraper::RobotsFetcher.new(fetcher)
+
+      expect(described_class.new(fetcher: wrapped).fetcher).to be(wrapped)
+    end
+  end
+
   describe "#supports?" do
     subject(:client) { described_class.new(fetcher: fetcher) }
 

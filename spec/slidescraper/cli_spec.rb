@@ -29,6 +29,22 @@ RSpec.describe Slidescraper::CLI do
     expect(stdout.string.lines.first).to start_with("https://files.speakerdeck.com/")
   end
 
+  it "obeys robots.txt by default" do
+    fetcher.stub("https://speakerdeck.com/robots.txt", body: "User-agent: *\nDisallow: /\n",
+                                                       headers: { "content-type" => "text/plain" })
+
+    expect(cli.run([url])).to eq(described_class::EXIT_FAILURE)
+    expect(stderr.string).to include("robots.txt")
+  end
+
+  it "skips the robots.txt check with --no-robots" do
+    fetcher.stub("https://speakerdeck.com/robots.txt", body: "User-agent: *\nDisallow: /\n",
+                                                       headers: { "content-type" => "text/plain" })
+
+    expect(cli.run(["--no-robots", url])).to eq(described_class::EXIT_SUCCESS)
+    expect(JSON.parse(stdout.string)["page_count"]).to eq(6)
+  end
+
   it "reports usage when given no URL" do
     expect(cli.run([])).to eq(described_class::EXIT_USAGE)
     expect(stderr.string).to include("Usage: slidescraper")

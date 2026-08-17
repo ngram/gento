@@ -13,6 +13,7 @@ class StubFetcher < Slidescraper::Fetcher
   def initialize(stubs = {})
     @stubs = {}
     @requests = []
+    @sent_headers = {}
     stubs.each { |url, body| stub(url, body: body) }
     super()
   end
@@ -22,9 +23,9 @@ class StubFetcher < Slidescraper::Fetcher
     self
   end
 
-  def get(url, headers: {}) # rubocop:disable Lint/UnusedMethodArgument
+  def get(url, headers: {})
     url = url.to_s
-    @requests << url
+    record(url, headers)
     stub = lookup(url)
 
     unless stub.status.between?(200, 299)
@@ -35,11 +36,20 @@ class StubFetcher < Slidescraper::Fetcher
     Slidescraper::Response.new(status: stub.status, body: stub.body, url: url, headers: stub.headers)
   end
 
+  def headers_for(url)
+    @sent_headers[url.to_s] || {}
+  end
+
   def requested?(url)
     @requests.any? { |requested| url.is_a?(Regexp) ? requested.match?(url) : requested == url }
   end
 
   private
+
+  def record(url, headers)
+    @requests << url
+    @sent_headers[url] = headers.transform_keys { |key| key.to_s.downcase }
+  end
 
   # An unstubbed URL is a 404 rather than a silent nil, so a spec that forgets
   # a stub fails the way the real world would.
