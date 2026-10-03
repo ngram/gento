@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>slidescraper — スライド閲覧デモ</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #fbfbfd;
+      --surface: #ffffff;
+      --border: #dfe1e6;
+      --text: #1b1d20;
+      --muted: #6b7280;
+      --accent: #2f6feb;
+      --danger-bg: #fdeceb;
+      --danger-text: #8c1d18;
+      --radius: 10px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161a;
+        --surface: #1c1f24;
+        --border: #2e333b;
+        --text: #e8eaed;
+        --muted: #9aa2ad;
+        --accent: #6c9bff;
+        --danger-bg: #3a1d1b;
+        --danger-text: #ffb4a8;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 2.5rem 1.25rem 4rem;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", "Hiragino Sans",
+            "Noto Sans JP", sans-serif;
+    }
+
+    .wrap { max-width: 68rem; margin: 0 auto; }
+
+    header h1 { margin: 0 0 .25rem; font-size: 1.5rem; letter-spacing: -.01em; }
+    header p { margin: 0 0 2rem; color: var(--muted); }
+
+    form {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    input[type="url"] {
+      flex: 1 1 22rem;
+      padding: .7rem .9rem;
+      font: inherit;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    input[type="url"]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    button {
+      padding: .7rem 1.4rem;
+      font: inherit;
+      font-weight: 600;
+      color: #fff;
+      background: var(--accent);
+      border: 0;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .providers { margin: 0 0 2rem; color: var(--muted); font-size: .875rem; }
+    .providers code {
+      padding: .1rem .4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    .error {
+      padding: .9rem 1.1rem;
+      margin-bottom: 2rem;
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-radius: var(--radius);
+    }
+
+    .deck-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .deck-meta h2 { margin: 0 0 .25rem; font-size: 1.2rem; }
+    .deck-meta p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .deck-meta a { color: var(--accent); }
+
+    .view-toggle {
+      display: flex;
+      flex: none;
+      padding: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .view-toggle button {
+      padding: .35rem .9rem;
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      border-radius: calc(var(--radius) - 3px);
+    }
+
+    .view-toggle button[aria-pressed="true"] {
+      color: #fff;
+      background: var(--accent);
+    }
+
+    .slides {
+      display: grid;
+      gap: 1rem;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .slides[data-view="grid"] {
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    }
+
+    /* Continuous read: one column, page-sized, centred. */
+    .slides[data-view="scroll"] {
+      grid-template-columns: minmax(0, 52rem);
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .slides li {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .slides img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--bg);
+    }
+
+    .slides .slide-link {
+      display: block;
+      cursor: zoom-in;
+      /* An image that fails to load — an expired signed URL, a blocked
+         referrer — would otherwise collapse its tile to nothing, leaving a
+         page that cannot be seen or clicked. */
+      min-height: 4rem;
+      background: var(--bg);
+    }
+
+    .slides .slide-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .slides .n {
+      display: block;
+      padding: .4rem .7rem;
+      color: var(--muted);
+      font-size: .8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Lightbox ---------------------------------------------------------- */
+
+    .lightbox {
+      width: 100vw;
+      max-width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .lightbox::backdrop { background: rgba(0, 0, 0, .82); }
+
+    /* Only when open: dialog:not([open]) must keep the UA's display:none. */
+    .lightbox[open] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox img {
+      display: block;
+      width: auto;
+      height: auto;
+      /* Leave room either side so the arrows sit beside the slide rather
+         than on top of its content. */
+      max-width: min(100vw - 9rem, 110rem);
+      max-height: 92dvh;
+      border-radius: 6px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+    }
+
+    .lightbox button {
+      position: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: rgba(0, 0, 0, .45);
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .lightbox button:disabled { opacity: .25; cursor: default; }
+
+    .lb-close {
+      top: 1rem;
+      right: 1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .lb-nav {
+      top: 50%;
+      width: 3rem;
+      height: 3rem;
+      font-size: 2rem;
+      line-height: 1;
+      transform: translateY(-50%);
+    }
+
+    .lb-prev { left: 1rem; }
+    .lb-next { right: 1rem; }
+
+    .lb-counter {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      margin: 0;
+      padding: .3rem .9rem;
+      color: #fff;
+      font-size: .85rem;
+      background: rgba(0, 0, 0, .55);
+      border-radius: 999px;
+      transform: translateX(-50%);
+    }
+
+    /* On a phone there is no room for gutters, so the arrows overlay the
+       slide edges instead. */
+    @media (max-width: 40rem) {
+      .lightbox img { max-width: 96vw; max-height: 84dvh; }
+      .lb-nav { width: 2.5rem; height: 2.5rem; font-size: 1.5rem; }
+      .lb-prev { left: .35rem; }
+      .lb-next { right: .35rem; }
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <%= yield %>
+    <footer>
+      <p>
+        画像は各サービスのオリジナル URL をそのまま参照しています（再ホストはしません）。
+        JSON API: <code>/api/decks?url=...</code> ・
+        <a href="https://github.com/ngram/slidescraper">GitHub</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

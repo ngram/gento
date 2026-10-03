@@ -1,0 +1,38 @@
+name: Deploy
+
+# Deploying builds and pushes the container image, so it is manual by default.
+# Flip the `push` trigger on once the account is wired up.
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: ["main"]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cloudflare:
+    name: Workers + Containers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Install worker dependencies
+        working-directory: worker
+        run: npm ci
+
+      # The container image is built from the repository root, because the
+      # demo app depends on the gem by relative path.
+      - name: Deploy
+        working-directory: worker
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

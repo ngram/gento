@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+# The demo consumes the gem from this repository rather than from RubyGems, so
+# a change to the library is exercised by the demo without a release.
+gem "slidescraper", path: ".."
+
+gem "puma", "~> 6.4"
+gem "rackup", "~> 2.2"
+gem "sinatra", "~> 4.1"
+
+group :test do
+  gem "rack-test", "~> 2.1"
+  gem "rspec", "~> 3.13"
+end

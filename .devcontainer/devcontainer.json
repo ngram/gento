@@ -1,0 +1,44 @@
+{
+  "name": "slidescraper",
+  // Pinned to bookworm on purpose, not just to a Ruby version. The floating
+  // ":3.3" tag moved to Debian trixie, where the docker-in-docker feature
+  // cannot install its default moby packages — the container build fails and
+  // Codespaces silently falls back to a bare recovery container. Do not drop
+  // the distro suffix. (The other way out is "moby": false on the feature
+  // below, which installs Docker CE instead.)
+  "image": "mcr.microsoft.com/devcontainers/ruby:3.3-bookworm",
+
+  "features": {
+    // The container image is the point of this environment: web/Dockerfile
+    // has to be buildable here.
+    //
+    // dockerDashComposeVersion "none" skips a second, redundant install: the
+    // apt moby-compose package already provides `docker compose`, and the
+    // feature would otherwise also pull the standalone `docker-compose`
+    // binary from GitHub releases — a download that fails inside the
+    // Codespaces build and takes the whole container with it.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerDashComposeVersion": "none"
+    },
+    // For the Cloudflare Worker and wrangler.
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+
+  // Two cores is plenty for this repo and halves the rate at which a
+  // Codespace eats the free monthly allowance.
+  "hostRequirements": { "cpus": 2 },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  "forwardPorts": [8080, 8787],
+  "portsAttributes": {
+    "8080": { "label": "demo web app" },
+    "8787": { "label": "wrangler dev" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["Shopify.ruby-lsp", "esbenp.prettier-vscode"]
+    }
+  }
+}
