@@ -8,21 +8,21 @@ RSpec.describe Gento::Client do
                .stub(%r{/oembed\.json}, body: fixture("speaker_deck", "oembed.json"))
   end
 
-  describe "#scrape" do
+  describe "#fetch" do
     it "dispatches to the adapter that claims the URL" do
-      deck = described_class.new(fetcher: fetcher).scrape(url)
+      deck = described_class.new(fetcher: fetcher).fetch(url)
 
       expect(deck.provider).to eq("speaker_deck")
       expect(deck.page_count).to eq(6)
     end
 
     it "raises UnsupportedURLError for an unknown host" do
-      expect { described_class.new(fetcher: fetcher).scrape("https://example.com/deck") }
+      expect { described_class.new(fetcher: fetcher).fetch("https://example.com/deck") }
         .to raise_error(Gento::UnsupportedURLError, /no adapter registered/)
     end
 
     it "raises UnsupportedURLError for a non-HTTP URL" do
-      expect { described_class.new(fetcher: fetcher).scrape("ftp://speakerdeck.com/x") }
+      expect { described_class.new(fetcher: fetcher).fetch("ftp://speakerdeck.com/x") }
         .to raise_error(Gento::UnsupportedURLError)
     end
   end
@@ -33,7 +33,7 @@ RSpec.describe Gento::Client do
                    body: "User-agent: *\nDisallow: /example/\n",
                    headers: { "content-type" => "text/plain" })
 
-      expect { described_class.new(fetcher: fetcher).scrape(url) }
+      expect { described_class.new(fetcher: fetcher).fetch(url) }
         .to raise_error(Gento::RobotsDisallowedError)
     end
 
@@ -44,7 +44,7 @@ RSpec.describe Gento::Client do
 
       client = described_class.new(fetcher: fetcher, robots: false)
 
-      expect(client.scrape(url).page_count).to eq(6)
+      expect(client.fetch(url).page_count).to eq(6)
       expect(fetcher).not_to be_requested("https://speakerdeck.com/robots.txt")
     end
 
@@ -77,7 +77,7 @@ RSpec.describe Gento::Client do
 
   describe "Deck#to_h" do
     it "serializes to JSON-ready data" do
-      deck = described_class.new(fetcher: fetcher).scrape(url)
+      deck = described_class.new(fetcher: fetcher).fetch(url)
       data = JSON.parse(deck.to_json)
 
       expect(data["page_count"]).to eq(6)

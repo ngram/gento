@@ -44,7 +44,7 @@ SlideShare は、JavaScript を実行しないクライアントに対して、�
 
 ```
 slide_share: https://www.slideshare.net/slideshow/ansiblenetwork201808/108457145 returned
-SlideShare's JavaScript bot challenge instead of the deck. Scraping SlideShare needs a
+SlideShare's JavaScript bot challenge instead of the deck. Fetching from SlideShare needs a
 JavaScript-capable Gento::Fetcher; the default net/http one cannot get past it.
 ```
 

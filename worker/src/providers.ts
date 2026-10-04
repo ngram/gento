@@ -45,7 +45,7 @@ export function isSupportedUrl(candidate: string): boolean {
  *
  * Normalises away the noise that would otherwise fragment the cache: scheme,
  * a `www.` prefix, a trailing slash, and tracking query parameters. Two URLs
- * that name the same deck should only ever cost one scrape.
+ * that name the same deck should only ever cost one fetch.
  */
 export function cacheKeyFor(deckUrl: string): string {
   const url = new URL(deckUrl);

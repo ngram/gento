@@ -10,7 +10,7 @@ module Gento
   # embed view — and works just as well over an injected fetcher as over the
   # net/http one.
   #
-  # On by default. `Gento.scrape(url, robots: false)` turns it off; the
+  # On by default. `Gento.fetch(url, robots: false)` turns it off; the
   # caller then owns whatever that implies.
   #
   # One gap: the wrapped fetcher follows redirects itself, so a redirect into
@@ -45,7 +45,7 @@ module Gento
 
     # The Crawl-delay the host asks for, in seconds, or nil.
     #
-    # Not enforced here: one scrape is a handful of requests, and sleeping
+    # Not enforced here: one fetch is a handful of requests, and sleeping
     # inside a fetcher would surprise a caller who already paces its own work.
     # Exposed so a caller doing more than one deck can honour it.
     def crawl_delay(url)
@@ -73,7 +73,7 @@ module Gento
       cause = robots.reason || "#{origin(uri)}#{ROBOTS_PATH} disallows #{path}"
 
       "#{cause} for #{user_agent_label}. " \
-        "Pass robots: false to scrape it anyway, and take responsibility for doing so."
+        "Pass robots: false to fetch it anyway, and take responsibility for doing so."
     end
 
     def user_agent_label

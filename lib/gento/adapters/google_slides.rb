@@ -24,7 +24,7 @@ module Gento
         %w[docs.google.com]
       end
 
-      def scrape(url)
+      def fetch(url)
         published, id = presentation_id(url)
         fail_extraction("could not find a presentation id in #{url}") unless id
 

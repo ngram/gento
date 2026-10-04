@@ -16,7 +16,7 @@ module Gento
         %w[docswell.com]
       end
 
-      def scrape(url)
+      def fetch(url)
         page = get(url).html
 
         # The page links the embed both plainly and with a ?mode= variant.

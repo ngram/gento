@@ -36,7 +36,7 @@ export default {
 /**
  * Serves a deck from the edge cache, falling back to the container.
  *
- * Scraping costs a round trip to someone else's site, so a cache hit is worth
+ * Fetching a deck costs a round trip to someone else's site, so a cache hit is worth
  * real money and real politeness. Only successful responses are stored.
  */
 async function cached(

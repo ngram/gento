@@ -94,7 +94,7 @@ docker exec gento-web bundle exec ruby -e \
 # => speaker_deck, slide_share, docswell, google_slides
 ```
 
-### 4-4. 実際にスクレイピングできること
+### 4-4. 実際に取得できること
 
 4サービスを一通り。ネットワークに出るので数秒かかります。
 

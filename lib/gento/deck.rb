@@ -3,7 +3,7 @@
 require "json"
 
 module Gento
-  # The result of scraping one slide URL: metadata plus the ordered pages.
+  # The result of fetching one slide URL: metadata plus the ordered pages.
   class Deck
     attr_reader :provider, :source_url, :title, :author, :description,
                 :published_at, :slides

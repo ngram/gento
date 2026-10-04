@@ -22,9 +22,9 @@ RSpec.describe Gento::Web::App do
   def stub_client(result)
     client = instance_double(Gento::Client)
     if result.is_a?(StandardError)
-      allow(client).to receive(:scrape).and_raise(result)
+      allow(client).to receive(:fetch).and_raise(result)
     else
-      allow(client).to receive(:scrape).and_return(result)
+      allow(client).to receive(:fetch).and_return(result)
     end
     allow(Gento::Client).to receive(:new).and_return(client)
     client
@@ -93,7 +93,7 @@ RSpec.describe Gento::Web::App do
       expect(last_response.body).not_to include("<ul class=\"slides\">")
     end
 
-    it "renders every page of a scraped deck" do
+    it "renders every page of a fetched deck" do
       stub_client(deck)
 
       get "/", url: deck_url
@@ -228,13 +228,13 @@ RSpec.describe Gento::Web::App do
   end
 
   describe "caching" do
-    it "scrapes a given URL only once within the TTL" do
+    it "fetches a given URL only once within the TTL" do
       client = stub_client(deck)
 
       get "/api/decks", url: deck_url
       get "/api/decks", url: deck_url
 
-      expect(client).to have_received(:scrape).once
+      expect(client).to have_received(:fetch).once
     end
   end
 

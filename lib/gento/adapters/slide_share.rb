@@ -21,7 +21,7 @@ module Gento
         %w[slideshare.net]
       end
 
-      def scrape(url)
+      def fetch(url)
         page = get(url).html
         fail_challenge(url) if challenge?(page)
 
@@ -40,7 +40,7 @@ module Gento
       def fail_challenge(url)
         fail_extraction(
           "#{url} returned SlideShare's JavaScript bot challenge instead of the deck. " \
-          "Scraping SlideShare needs a JavaScript-capable Gento::Fetcher; " \
+          "Fetching from SlideShare needs a JavaScript-capable Gento::Fetcher; " \
           "the default net/http one cannot get past it."
         )
       end

@@ -15,7 +15,7 @@ class MyFetcher < Gento::Fetcher
   end
 end
 
-Gento.scrape(url, fetcher: MyFetcher.new)
+Gento.fetch(url, fetcher: MyFetcher.new)
 ```
 
 テストがソケットを一切開かないのもこの設計のおかげで、オフラインの CI でもそのまま動きます。
@@ -26,7 +26,7 @@ Gento.scrape(url, fetcher: MyFetcher.new)
 まず動きません。
 
 **対応サービスの追加はクラス1枚。** `Gento::Adapters::Base` を継承して
-`.hosts` と `#scrape` を実装し、レジストリに登録するだけです。
+`.hosts` と `#fetch` を実装し、レジストリに登録するだけです。
 
 ```ruby
 Gento::Registry.default.register(MyAdapter)

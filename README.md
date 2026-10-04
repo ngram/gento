@@ -23,7 +23,7 @@ gem "gento"
 ```ruby
 require "gento"
 
-deck = Gento.scrape("https://speakerdeck.com/user/talk")
+deck = Gento.fetch("https://speakerdeck.com/user/talk")
 
 deck.title       # => "快適なスライド閲覧生活を実現する Web サービスの開発"
 deck.author      # => "ngram"
@@ -63,8 +63,8 @@ https://files.speakerdeck.com/presentations/.../slide_0.jpg
 デッキページだけでなく、アダプタが出すすべてのリクエスト（oEmbed、embed ビューなど）が対象です。
 
 ```ruby
-Gento.scrape(url)                 # robots.txt に従う（既定）
-Gento.scrape(url, robots: false)  # 従わない（判断は利用者の責任）
+Gento.fetch(url)                 # robots.txt に従う（既定）
+Gento.fetch(url, robots: false)  # 従わない（判断は利用者の責任）
 ```
 
 ```console
@@ -81,7 +81,7 @@ $ gento --no-robots https://speakerdeck.com/user/talk
 通信はすべて `Gento::Fetcher` を経由するので、独自の HTTP スタックを差し込めます。
 
 ```ruby
-Gento.scrape(url, fetcher: MyFetcher.new)
+Gento.fetch(url, fetcher: MyFetcher.new)
 ```
 
 詳細は [docs/design.md](docs/design.md) を参照してください。

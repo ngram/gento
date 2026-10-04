@@ -11,9 +11,9 @@ RSpec.describe Gento::Adapters::GoogleSlides do
     StubFetcher.new.stub(htmlpresent_url, body: fixture("google_slides", "htmlpresent.html"))
   end
 
-  describe "#scrape" do
+  describe "#fetch" do
     it "builds one PNG export URL per page, in order" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.page_count).to eq(4)
       expect(deck.slides.first.url).to eq(
@@ -23,18 +23,18 @@ RSpec.describe Gento::Adapters::GoogleSlides do
     end
 
     it "counts each page once" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url).uniq.size).to eq(4)
     end
 
     it "strips the Google Slides suffix from the title" do
-      expect(adapter.scrape(url).title).to eq("Example Presentation")
+      expect(adapter.fetch(url).title).to eq("Example Presentation")
     end
 
     it "accepts any URL form that names the presentation" do
       %w[edit preview present].each do |suffix|
-        deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/#{suffix}")
+        deck = adapter.fetch("https://docs.google.com/presentation/d/#{id}/#{suffix}")
         expect(deck.page_count).to eq(4)
       end
     end
@@ -50,14 +50,14 @@ RSpec.describe Gento::Adapters::GoogleSlides do
       end
 
       it "reads every page" do
-        deck = adapter.scrape(url)
+        deck = adapter.fetch(url)
 
         expect(deck.page_count).to eq(3)
         expect(deck.slides.first.url).to end_with("pageid=out_s01")
       end
 
       it "accepts the /mobilepresent URL form" do
-        deck = adapter.scrape("https://docs.google.com/presentation/d/#{id}/mobilepresent?slide=id.out_s01")
+        deck = adapter.fetch("https://docs.google.com/presentation/d/#{id}/mobilepresent?slide=id.out_s01")
 
         expect(deck.page_count).to eq(3)
       end
@@ -72,7 +72,7 @@ RSpec.describe Gento::Adapters::GoogleSlides do
       end
 
       it "reads every page" do
-        deck = adapter.scrape(url)
+        deck = adapter.fetch(url)
 
         expect(deck.page_count).to eq(5)
         expect(deck.title).to eq("Example Presentation")
@@ -82,7 +82,7 @@ RSpec.describe Gento::Adapters::GoogleSlides do
       # given, so the signed viewpage URL in the document is the only thing
       # that actually serves their pages.
       it "takes the signed viewpage URLs rather than building export URLs" do
-        deck = adapter.scrape(url)
+        deck = adapter.fetch(url)
 
         expect(deck.slides.map(&:url)).to all(include("/viewpage?"))
         expect(deck.slides.map(&:url)).to all(include("hmac="))
@@ -90,14 +90,14 @@ RSpec.describe Gento::Adapters::GoogleSlides do
       end
 
       it "keeps the pages in order" do
-        deck = adapter.scrape(url)
+        deck = adapter.fetch(url)
 
         expect(deck.slides.first.url).to include("pageid=p&")
         expect(deck.slides[1].url).to include("pageid=g9f8e7d6c5_0_4&")
       end
 
       it "counts each page once" do
-        deck = adapter.scrape(url)
+        deck = adapter.fetch(url)
 
         expect(deck.slides.map(&:url).uniq.size).to eq(5)
       end
@@ -106,7 +106,7 @@ RSpec.describe Gento::Adapters::GoogleSlides do
         fetcher = StubFetcher.new.stub("https://docs.google.com/presentation/d/e/#{id}/htmlpresent",
                                        body: "<html><body>Not found</body></html>")
 
-        expect { described_class.new(fetcher: fetcher).scrape(url) }
+        expect { described_class.new(fetcher: fetcher).fetch(url) }
           .to raise_error(Gento::ExtractionError, /still published/)
       end
     end
@@ -114,12 +114,12 @@ RSpec.describe Gento::Adapters::GoogleSlides do
     it "raises ExtractionError when the deck is not public" do
       fetcher = StubFetcher.new.stub(htmlpresent_url, body: "<html><body>Sign in</body></html>")
 
-      expect { described_class.new(fetcher: fetcher).scrape(url) }
+      expect { described_class.new(fetcher: fetcher).fetch(url) }
         .to raise_error(Gento::ExtractionError, /shared publicly/)
     end
 
     it "raises ExtractionError when the URL names no presentation" do
-      expect { adapter.scrape("https://docs.google.com/document/d/abc/edit") }
+      expect { adapter.fetch("https://docs.google.com/document/d/abc/edit") }
         .to raise_error(Gento::ExtractionError, /presentation id/)
     end
   end

@@ -24,7 +24,7 @@ module Gento
         set :port, Integer(ENV.fetch("PORT", 8080))
       end
 
-      # Scraping a deck costs a request to someone else's site, so never do it
+      # Fetching a deck costs a request to someone else's site, so never do it
       # twice for the same URL in the TTL window. The Worker in front caches
       # too; this protects the origin sites when it misses.
       CACHE = DeckCache.new(
@@ -58,7 +58,7 @@ module Gento
         end
 
         def deck_for(url)
-          CACHE.fetch(url) { client.scrape(url) }
+          CACHE.fetch(url) { client.fetch(url) }
         end
 
         def json_error(status, message)

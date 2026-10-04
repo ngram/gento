@@ -4,7 +4,7 @@
 
 ### Added
 
-- `Gento::Client#scrape`, which turns a slide URL into a `Deck` of
+- `Gento::Client#fetch`, which turns a slide URL into a `Deck` of
   ordered page images.
 - Adapters for Speaker Deck, SlideShare, Docswell and public Google Slides.
 - A pure-Ruby HTML scanner, so the gem carries no native extensions and no

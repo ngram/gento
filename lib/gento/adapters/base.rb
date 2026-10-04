@@ -45,8 +45,8 @@ module Gento
       end
 
       # @return [Gento::Deck]
-      def scrape(url)
-        raise NotImplementedError, "#{self.class} must implement #scrape"
+      def fetch(url)
+        raise NotImplementedError, "#{self.class} must implement #fetch"
       end
 
       private
@@ -90,7 +90,7 @@ module Gento
       # oEmbed metadata, or an empty hash.
       #
       # It is always a nice-to-have: cleaner titles and real author names than
-      # OpenGraph offers, but never something a scrape should fail over.
+      # OpenGraph offers, but never something a fetch should fail over.
       def fetch_oembed(html)
         endpoint = oembed_endpoint(html)
         return {} unless endpoint

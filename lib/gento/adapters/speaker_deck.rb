@@ -17,7 +17,7 @@ module Gento
         %w[speakerdeck.com]
       end
 
-      def scrape(url)
+      def fetch(url)
         page = get(url).html
         oembed = fetch_oembed(page)
 

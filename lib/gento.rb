@@ -26,11 +26,11 @@ require_relative "gento/client"
 # does — including slim containers and ruby.wasm.
 module Gento
   class << self
-    # Convenience wrapper around Client#scrape for one-off calls.
+    # Convenience wrapper around Client#fetch for one-off calls.
     #
     # robots: false skips the robots.txt check, which is on by default.
-    def scrape(url, fetcher: nil, registry: nil, robots: true)
-      Client.new(fetcher: fetcher, registry: registry, robots: robots).scrape(url)
+    def fetch(url, fetcher: nil, registry: nil, robots: true)
+      Client.new(fetcher: fetcher, registry: registry, robots: robots).fetch(url)
     end
 
     def supports?(url)

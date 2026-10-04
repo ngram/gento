@@ -4,7 +4,7 @@ module Gento
   # The entry point: give it a slide URL, get a Deck back.
   #
   #   client = Gento::Client.new
-  #   deck = client.scrape("https://speakerdeck.com/user/talk")
+  #   deck = client.fetch("https://speakerdeck.com/user/talk")
   #   deck.slides.map(&:url)
   #
   # Both collaborators are injectable: swap the fetcher to run on a host with
@@ -31,11 +31,11 @@ module Gento
     # @raise [FetchError] when the remote host cannot be reached
     # @raise [ExtractionError] when the page held no slides
     # @return [Deck]
-    def scrape(url)
+    def fetch(url)
       adapter = registry.find(url)
       raise UnsupportedURLError, url unless adapter
 
-      adapter.new(fetcher: fetcher).scrape(url.to_s)
+      adapter.new(fetcher: fetcher).fetch(url.to_s)
     end
 
     def supports?(url)

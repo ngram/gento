@@ -6,7 +6,7 @@ module Gento
     #
     # Cloudflare Containers sleep when idle, so this only ever holds a warm
     # instance's recent work — the durable caching lives in the Worker. Its job
-    # here is to keep a refresh-happy visitor from re-scraping the same deck.
+    # here is to keep a refresh-happy visitor from re-fetching the same deck.
     class DeckCache
       Entry = Struct.new(:value, :expires_at)
 
@@ -24,7 +24,7 @@ module Gento
         hit = read(key)
         return hit if hit
 
-        # Computed outside the lock: scraping takes seconds and must not block
+        # Computed outside the lock: fetching takes seconds and must not block
         # every other request. A concurrent duplicate is cheaper than that.
         value = yield
         write(key, value)

@@ -14,16 +14,16 @@ RSpec.describe Gento::Adapters::SlideShare do
     end
   end
 
-  describe "#scrape" do
+  describe "#fetch" do
     it "returns every page in order" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.page_count).to eq(4)
       expect(deck.slides.map(&:number)).to eq((1..4).to_a)
     end
 
     it "keeps the widest copy of each page" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       # This deck publishes page 1 at 2048 and the rest only at 320.
       expect(deck.slides.first.url).to include("-1-2048.jpg")
@@ -31,13 +31,13 @@ RSpec.describe Gento::Adapters::SlideShare do
     end
 
     it "excludes images on the same CDN that are not pages" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url)).to all(exclude_substring("profile-photo"))
     end
 
     it "reads metadata from OpenGraph and JSON-LD" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.title).to eq("Example Presentation")
       expect(deck.author).to eq("Example Author")
@@ -46,7 +46,7 @@ RSpec.describe Gento::Adapters::SlideShare do
     end
 
     it "counts each page once" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url).uniq.size).to eq(4)
     end
@@ -59,12 +59,12 @@ RSpec.describe Gento::Adapters::SlideShare do
     let(:fetcher) { StubFetcher.new.stub(url, body: fixture("slide_share", "challenge.html")) }
 
     it "is reported as itself, not as an empty deck" do
-      expect { adapter.scrape(url) }
+      expect { adapter.fetch(url) }
         .to raise_error(Gento::ExtractionError, /bot challenge/)
     end
 
     it "points at the fetcher seam as the way past it" do
-      expect { adapter.scrape(url) }
+      expect { adapter.fetch(url) }
         .to raise_error(Gento::ExtractionError, /Gento::Fetcher/)
     end
   end

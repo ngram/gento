@@ -14,36 +14,36 @@ RSpec.describe Gento::Adapters::Docswell do
                .stub(%r{/service/oembed}, body: fixture("docswell", "oembed.json"))
   end
 
-  describe "#scrape" do
+  describe "#fetch" do
     it "reads the whole deck from the embed view" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.page_count).to eq(5)
       expect(fetcher).to be_requested(embed_url)
     end
 
     it "collapses the thumbnail of each page into one slide" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url)).to all(exclude_substring("width="))
       expect(deck.slides.map(&:url).uniq.size).to eq(5)
     end
 
     it "orders pages as the deck presents them" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       # og:image on the deck page is the cover, so it must come first.
       expect(deck.slides.first.url).to eq("https://bcdn.docswell.com/page/AAAA111111.jpg")
     end
 
     it "excludes site chrome served from the same CDN" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url)).to all(include("/page/"))
     end
 
     it "reads metadata from OpenGraph and oEmbed" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.title).to eq("サンプル資料")
       expect(deck.author).to eq("サンプル著者")
@@ -53,7 +53,7 @@ RSpec.describe Gento::Adapters::Docswell do
     it "raises ExtractionError when the embed view cannot be found" do
       fetcher = StubFetcher.new.stub(url, body: "<html><head><title>x</title></head></html>")
 
-      expect { described_class.new(fetcher: fetcher).scrape(url) }
+      expect { described_class.new(fetcher: fetcher).fetch(url) }
         .to raise_error(Gento::ExtractionError, /embed view/)
     end
   end

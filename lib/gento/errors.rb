@@ -41,6 +41,6 @@ module Gento
   #
   # A FetchError because it is a request that did not happen, which also means
   # an optional extra like an oEmbed lookup degrades instead of failing the
-  # whole scrape.
+  # whole fetch.
   class RobotsDisallowedError < FetchError; end
 end

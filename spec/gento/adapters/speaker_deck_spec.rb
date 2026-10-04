@@ -23,9 +23,9 @@ RSpec.describe Gento::Adapters::SpeakerDeck do
     end
   end
 
-  describe "#scrape" do
+  describe "#fetch" do
     it "returns every page in order" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.page_count).to eq(6)
       expect(deck.slides.map(&:number)).to eq((1..6).to_a)
@@ -36,36 +36,36 @@ RSpec.describe Gento::Adapters::SpeakerDeck do
     end
 
     it "excludes the recommended decks shown alongside this one" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url)).to all(include(deck_id))
     end
 
     it "excludes the low-resolution preview images" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url)).to all(exclude_substring("preview_slide"))
     end
 
     it "deduplicates pages that also appear with a cache-busting query" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.slides.map(&:url).uniq.size).to eq(6)
       expect(deck.slides.map(&:url)).to all(exclude_substring("?"))
     end
 
     it "prefers oEmbed for title and author" do
-      deck = adapter.scrape(url)
+      deck = adapter.fetch(url)
 
       expect(deck.title).to eq("Example Deck Title")
       expect(deck.author).to eq("Example Author")
       expect(deck.provider).to eq("speaker_deck")
     end
 
-    it "still scrapes when the oEmbed endpoint is unavailable" do
+    it "still fetches the deck when the oEmbed endpoint is unavailable" do
       fetcher = StubFetcher.new.stub(url, body: fixture("speaker_deck", "deck.html"))
 
-      deck = described_class.new(fetcher: fetcher).scrape(url)
+      deck = described_class.new(fetcher: fetcher).fetch(url)
 
       expect(deck.page_count).to eq(6)
       expect(deck.title).to eq("Example Deck Title")
@@ -74,7 +74,7 @@ RSpec.describe Gento::Adapters::SpeakerDeck do
     it "raises ExtractionError when the page holds no deck" do
       fetcher = StubFetcher.new.stub(url, body: "<html><body>nothing here</body></html>")
 
-      expect { described_class.new(fetcher: fetcher).scrape(url) }
+      expect { described_class.new(fetcher: fetcher).fetch(url) }
         .to raise_error(Gento::ExtractionError, /presentation id/)
     end
   end

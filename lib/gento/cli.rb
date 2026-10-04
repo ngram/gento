@@ -28,7 +28,7 @@ module Gento
         return EXIT_USAGE
       end
 
-      scrape_all(urls)
+      fetch_all(urls)
     rescue OptionParser::ParseError => e
       @stderr.puts "gento: #{e.message}"
       EXIT_USAGE
@@ -36,12 +36,12 @@ module Gento
 
     private
 
-    def scrape_all(urls)
+    def fetch_all(urls)
       client = Client.new(fetcher: build_fetcher, robots: @options[:robots])
       status = EXIT_SUCCESS
 
       urls.each do |url|
-        emit(client.scrape(url))
+        emit(client.fetch(url))
       rescue Error => e
         @stderr.puts "gento: #{url}: #{e.message}"
         status = EXIT_FAILURE
