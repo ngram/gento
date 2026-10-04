@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gento",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "observability": {
+    "enabled": true
+  },
+
+  // The Ruby demo app. Built from the repository root, because web/Gemfile
+  // depends on the gem by relative path.
+  "containers": [
+    {
+      "class_name": "GentoContainer",
+      "image": "../web/Dockerfile",
+      "image_build_context": "..",
+      "instance_type": "basic",
+      "max_instances": 3
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CONTAINER",
+        "class_name": "GentoContainer"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["GentoContainer"]
+    }
+  ]
+}
