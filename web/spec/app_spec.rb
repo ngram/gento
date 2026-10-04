@@ -1,52 +1,52 @@
 # frozen_string_literal: true
 
-RSpec.describe Slidescraper::Web::App do
+RSpec.describe Gento::Web::App do
   def app
     described_class
   end
 
   let(:deck_url) { "https://speakerdeck.com/ngram/slide-viewer" }
   let(:deck) do
-    Slidescraper::Deck.new(
+    Gento::Deck.new(
       provider: "speaker_deck",
       source_url: deck_url,
       title: "テスト & デッキ",
       author: "ngram",
       slides: [
-        Slidescraper::Slide.new(number: 1, url: "https://files.speakerdeck.com/p/1.jpg"),
-        Slidescraper::Slide.new(number: 2, url: "https://files.speakerdeck.com/p/2.jpg")
+        Gento::Slide.new(number: 1, url: "https://files.speakerdeck.com/p/1.jpg"),
+        Gento::Slide.new(number: 2, url: "https://files.speakerdeck.com/p/2.jpg")
       ]
     )
   end
 
   def stub_client(result)
-    client = instance_double(Slidescraper::Client)
+    client = instance_double(Gento::Client)
     if result.is_a?(StandardError)
       allow(client).to receive(:scrape).and_raise(result)
     else
       allow(client).to receive(:scrape).and_return(result)
     end
-    allow(Slidescraper::Client).to receive(:new).and_return(client)
+    allow(Gento::Client).to receive(:new).and_return(client)
     client
   end
 
   describe "user agent configuration" do
     around do |example|
-      original = ENV.fetch("SLIDESCRAPER_USER_AGENT", nil)
+      original = ENV.fetch("GENTO_USER_AGENT", nil)
       example.run
     ensure
-      original.nil? ? ENV.delete("SLIDESCRAPER_USER_AGENT") : ENV["SLIDESCRAPER_USER_AGENT"] = original
+      original.nil? ? ENV.delete("GENTO_USER_AGENT") : ENV["GENTO_USER_AGENT"] = original
     end
 
     it "defaults to the gem's own user agent" do
-      ENV.delete("SLIDESCRAPER_USER_AGENT")
+      ENV.delete("GENTO_USER_AGENT")
 
       expect(app.new!.send(:fetcher).user_agent)
-        .to eq(Slidescraper::NetHttpFetcher::DEFAULT_USER_AGENT)
+        .to eq(Gento::NetHttpFetcher::DEFAULT_USER_AGENT)
     end
 
-    it "takes SLIDESCRAPER_USER_AGENT when set" do
-      ENV["SLIDESCRAPER_USER_AGENT"] = "Mozilla/5.0 (compatible; example)"
+    it "takes GENTO_USER_AGENT when set" do
+      ENV["GENTO_USER_AGENT"] = "Mozilla/5.0 (compatible; example)"
 
       expect(app.new!.send(:fetcher).user_agent).to eq("Mozilla/5.0 (compatible; example)")
     end
@@ -54,21 +54,21 @@ RSpec.describe Slidescraper::Web::App do
 
   describe "robots.txt configuration" do
     around do |example|
-      original = ENV.fetch("SLIDESCRAPER_ROBOTS", nil)
+      original = ENV.fetch("GENTO_ROBOTS", nil)
       example.run
     ensure
-      original.nil? ? ENV.delete("SLIDESCRAPER_ROBOTS") : ENV["SLIDESCRAPER_ROBOTS"] = original
+      original.nil? ? ENV.delete("GENTO_ROBOTS") : ENV["GENTO_ROBOTS"] = original
     end
 
     it "is on when nothing is configured" do
-      ENV.delete("SLIDESCRAPER_ROBOTS")
+      ENV.delete("GENTO_ROBOTS")
 
       expect(app.new!.send(:robots?)).to be(true)
     end
 
     it "is off when the deployment turns it off" do
       %w[0 false off no OFF].each do |value|
-        ENV["SLIDESCRAPER_ROBOTS"] = value
+        ENV["GENTO_ROBOTS"] = value
 
         expect(app.new!.send(:robots?)).to be(false)
       end
@@ -153,7 +153,7 @@ RSpec.describe Slidescraper::Web::App do
     end
 
     it "shows a 422 for an unsupported URL" do
-      stub_client(Slidescraper::UnsupportedURLError.new("https://example.com/x"))
+      stub_client(Gento::UnsupportedURLError.new("https://example.com/x"))
 
       get "/", url: "https://example.com/x"
 
@@ -162,7 +162,7 @@ RSpec.describe Slidescraper::Web::App do
     end
 
     it "shows a 502 when the remote host fails" do
-      stub_client(Slidescraper::FetchError.new("could not fetch"))
+      stub_client(Gento::FetchError.new("could not fetch"))
 
       get "/", url: deck_url
 
@@ -170,7 +170,7 @@ RSpec.describe Slidescraper::Web::App do
     end
 
     it "shows a 403 when robots.txt disallows the deck" do
-      stub_client(Slidescraper::RobotsDisallowedError.new("robots.txt disallows /x"))
+      stub_client(Gento::RobotsDisallowedError.new("robots.txt disallows /x"))
 
       get "/", url: deck_url
 
@@ -201,7 +201,7 @@ RSpec.describe Slidescraper::Web::App do
     end
 
     it "maps extraction failures to 422" do
-      stub_client(Slidescraper::ExtractionError.new("found no slide images"))
+      stub_client(Gento::ExtractionError.new("found no slide images"))
 
       get "/api/decks", url: deck_url
 
@@ -209,7 +209,7 @@ RSpec.describe Slidescraper::Web::App do
     end
 
     it "maps fetch failures to 502" do
-      stub_client(Slidescraper::FetchError.new("timed out"))
+      stub_client(Gento::FetchError.new("timed out"))
 
       get "/api/decks", url: deck_url
 
@@ -218,7 +218,7 @@ RSpec.describe Slidescraper::Web::App do
 
     # Not a failure: the host said not to, and we did not.
     it "maps a robots.txt refusal to 403" do
-      stub_client(Slidescraper::RobotsDisallowedError.new("robots.txt disallows /x"))
+      stub_client(Gento::RobotsDisallowedError.new("robots.txt disallows /x"))
 
       get "/api/decks", url: deck_url
 

@@ -4,7 +4,7 @@ source "https://rubygems.org"
 
 # The demo consumes the gem from this repository rather than from RubyGems, so
 # a change to the library is exercised by the demo without a release.
-gem "slidescraper", path: ".."
+gem "gento", path: ".."
 
 gem "puma", "~> 6.4"
 gem "rackup", "~> 2.2"

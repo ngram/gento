@@ -1,4 +1,4 @@
-# slidescraper
+# gento
 
 スライド共有サービスの URL を渡すと、各ページの画像 URL を順番に並べて返す Ruby gem です。
 
@@ -9,21 +9,21 @@
 ## インストール
 
 ```console
-$ gem install slidescraper
+$ gem install gento
 ```
 
 Gemfile なら:
 
 ```ruby
-gem "slidescraper"
+gem "gento"
 ```
 
 ## 使いかた
 
 ```ruby
-require "slidescraper"
+require "gento"
 
-deck = Slidescraper.scrape("https://speakerdeck.com/user/talk")
+deck = Gento.scrape("https://speakerdeck.com/user/talk")
 
 deck.title       # => "快適なスライド閲覧生活を実現する Web サービスの開発"
 deck.author      # => "ngram"
@@ -37,13 +37,13 @@ deck.slides.map(&:url)
 対応している URL かどうかは、取得する前に確認できます。
 
 ```ruby
-Slidescraper.supports?("https://speakerdeck.com/user/talk")  # => true
+Gento.supports?("https://speakerdeck.com/user/talk")  # => true
 ```
 
 ### コマンドライン
 
 ```console
-$ slidescraper https://speakerdeck.com/user/talk
+$ gento https://speakerdeck.com/user/talk
 {
   "provider": "speaker_deck",
   "source_url": "https://speakerdeck.com/user/talk",
@@ -52,7 +52,7 @@ $ slidescraper https://speakerdeck.com/user/talk
   "slides": [ ... ]
 }
 
-$ slidescraper --format urls https://speakerdeck.com/user/talk
+$ gento --format urls https://speakerdeck.com/user/talk
 https://files.speakerdeck.com/presentations/.../slide_0.jpg
 ...
 ```
@@ -63,25 +63,25 @@ https://files.speakerdeck.com/presentations/.../slide_0.jpg
 デッキページだけでなく、アダプタが出すすべてのリクエスト（oEmbed、embed ビューなど）が対象です。
 
 ```ruby
-Slidescraper.scrape(url)                 # robots.txt に従う（既定）
-Slidescraper.scrape(url, robots: false)  # 従わない（判断は利用者の責任）
+Gento.scrape(url)                 # robots.txt に従う（既定）
+Gento.scrape(url, robots: false)  # 従わない（判断は利用者の責任）
 ```
 
 ```console
-$ slidescraper --no-robots https://speakerdeck.com/user/talk
+$ gento --no-robots https://speakerdeck.com/user/talk
 ```
 
-拒否された場合は `Slidescraper::RobotsDisallowedError` になります。
+拒否された場合は `Gento::RobotsDisallowedError` になります。
 `robots.txt` 自体を読めなかったとき（5xx・429・接続失敗）も、RFC 9309 に従って拒否扱いです。
 
 詳細は [docs/robots.md](docs/robots.md) を参照してください。
 
 ### HTTP クライアントの差し替え
 
-通信はすべて `Slidescraper::Fetcher` を経由するので、独自の HTTP スタックを差し込めます。
+通信はすべて `Gento::Fetcher` を経由するので、独自の HTTP スタックを差し込めます。
 
 ```ruby
-Slidescraper.scrape(url, fetcher: MyFetcher.new)
+Gento.scrape(url, fetcher: MyFetcher.new)
 ```
 
 詳細は [docs/design.md](docs/design.md) を参照してください。
@@ -90,12 +90,12 @@ Slidescraper.scrape(url, fetcher: MyFetcher.new)
 
 | 例外 | 起きるとき |
 | --- | --- |
-| `Slidescraper::UnsupportedURLError` | 対応アダプタのない URL |
-| `Slidescraper::RobotsDisallowedError` | `robots.txt` が許可していない（`FetchError` の一種） |
-| `Slidescraper::FetchError` | 取得に失敗（`ResponseError` を含む） |
-| `Slidescraper::ExtractionError` | 取得はできたがページを取り出せない |
+| `Gento::UnsupportedURLError` | 対応アダプタのない URL |
+| `Gento::RobotsDisallowedError` | `robots.txt` が許可していない（`FetchError` の一種） |
+| `Gento::FetchError` | 取得に失敗（`ResponseError` を含む） |
+| `Gento::ExtractionError` | 取得はできたがページを取り出せない |
 
-いずれも `Slidescraper::Error` を継承しています。
+いずれも `Gento::Error` を継承しています。
 
 **SlideShare は接続元 IP によってボット判定で弾かれることがあり**、その場合は
 `ExtractionError` になります。データセンターの IP からは恒常的に弾かれます
@@ -134,6 +134,8 @@ GitHub Codespaces なら `.devcontainer/` が上記をすべて用意します
 「快適なスライド閲覧⽣活を実現する Web サービスの開発」のサポートリポジトリを、
 現在も動く形で作り直したものです。当時の Lambda / PaaS 向けデプロイコードは、
 対象サービスが終了したため Cloudflare 向けに置き換えています。
+
+名前の gento は、スライドを映写して見せる「幻灯（げんとう）」から取っています。
 
 ## ライセンス
 

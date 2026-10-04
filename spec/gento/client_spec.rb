@@ -1,0 +1,88 @@
+# frozen_string_literal: true
+
+RSpec.describe Gento::Client do
+  let(:url) { "https://speakerdeck.com/example/example-deck" }
+  let(:fetcher) do
+    StubFetcher.new
+               .stub(url, body: fixture("speaker_deck", "deck.html"))
+               .stub(%r{/oembed\.json}, body: fixture("speaker_deck", "oembed.json"))
+  end
+
+  describe "#scrape" do
+    it "dispatches to the adapter that claims the URL" do
+      deck = described_class.new(fetcher: fetcher).scrape(url)
+
+      expect(deck.provider).to eq("speaker_deck")
+      expect(deck.page_count).to eq(6)
+    end
+
+    it "raises UnsupportedURLError for an unknown host" do
+      expect { described_class.new(fetcher: fetcher).scrape("https://example.com/deck") }
+        .to raise_error(Gento::UnsupportedURLError, /no adapter registered/)
+    end
+
+    it "raises UnsupportedURLError for a non-HTTP URL" do
+      expect { described_class.new(fetcher: fetcher).scrape("ftp://speakerdeck.com/x") }
+        .to raise_error(Gento::UnsupportedURLError)
+    end
+  end
+
+  describe "robots.txt" do
+    it "is obeyed by default" do
+      fetcher.stub("https://speakerdeck.com/robots.txt",
+                   body: "User-agent: *\nDisallow: /example/\n",
+                   headers: { "content-type" => "text/plain" })
+
+      expect { described_class.new(fetcher: fetcher).scrape(url) }
+        .to raise_error(Gento::RobotsDisallowedError)
+    end
+
+    it "is skipped when asked" do
+      fetcher.stub("https://speakerdeck.com/robots.txt",
+                   body: "User-agent: *\nDisallow: /\n",
+                   headers: { "content-type" => "text/plain" })
+
+      client = described_class.new(fetcher: fetcher, robots: false)
+
+      expect(client.scrape(url).page_count).to eq(6)
+      expect(fetcher).not_to be_requested("https://speakerdeck.com/robots.txt")
+    end
+
+    it "wraps an injected fetcher rather than trusting it to check" do
+      expect(described_class.new(fetcher: fetcher)).to be_robots
+      expect(described_class.new(fetcher: fetcher, robots: false)).not_to be_robots
+    end
+
+    it "does not stack a second check on a fetcher that already has one" do
+      wrapped = Gento::RobotsFetcher.new(fetcher)
+
+      expect(described_class.new(fetcher: wrapped).fetcher).to be(wrapped)
+    end
+  end
+
+  describe "#supports?" do
+    subject(:client) { described_class.new(fetcher: fetcher) }
+
+    it "answers for each supported provider" do
+      expect(client).to be_supports("https://speakerdeck.com/a/b")
+      expect(client).to be_supports("https://www.slideshare.net/a/b")
+      expect(client).to be_supports("https://www.docswell.com/s/a/b")
+      expect(client).to be_supports("https://docs.google.com/presentation/d/abc/edit")
+    end
+
+    it "is false for anything else" do
+      expect(client).not_to be_supports("https://example.com/")
+    end
+  end
+
+  describe "Deck#to_h" do
+    it "serializes to JSON-ready data" do
+      deck = described_class.new(fetcher: fetcher).scrape(url)
+      data = JSON.parse(deck.to_json)
+
+      expect(data["page_count"]).to eq(6)
+      expect(data["slides"].first).to include("number" => 1)
+      expect(data["source_url"]).to eq(url)
+    end
+  end
+end

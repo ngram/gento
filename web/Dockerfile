@@ -2,7 +2,7 @@
 #
 # Build from the REPOSITORY ROOT, not from web/:
 #
-#   docker build -f web/Dockerfile -t slidescraper-web .
+#   docker build -f web/Dockerfile -t gento-web .
 #
 # The demo depends on the gem by path, so the build context has to include both.
 
@@ -23,8 +23,8 @@ WORKDIR /app
 
 # Only what `bundle install` needs to evaluate the path-sourced gemspec, so
 # editing application code does not invalidate the dependency layer.
-COPY slidescraper.gemspec ./
-COPY lib/slidescraper/version.rb lib/slidescraper/
+COPY gento.gemspec ./
+COPY lib/gento/version.rb lib/gento/
 COPY web/Gemfile web/Gemfile.lock web/
 
 RUN cd web && bundle install && bundle clean --force
@@ -44,7 +44,7 @@ RUN groupadd --system --gid 1000 app \
 WORKDIR /app
 
 COPY --from=build /usr/local/bundle /usr/local/bundle
-COPY --chown=app:app slidescraper.gemspec ./
+COPY --chown=app:app gento.gemspec ./
 COPY --chown=app:app lib ./lib
 COPY --chown=app:app web ./web
 

@@ -91,7 +91,7 @@
 
   // --- view mode ---------------------------------------------------------
 
-  var STORAGE_KEY = "slidescraper:view";
+  var STORAGE_KEY = "gento:view";
   var toggle = document.getElementById("view-toggle");
 
   function applyView(view) {

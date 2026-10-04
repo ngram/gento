@@ -4,7 +4,7 @@
 
 ### Added
 
-- `Slidescraper::Client#scrape`, which turns a slide URL into a `Deck` of
+- `Gento::Client#scrape`, which turns a slide URL into a `Deck` of
   ordered page images.
 - Adapters for Speaker Deck, SlideShare, Docswell and public Google Slides.
 - A pure-Ruby HTML scanner, so the gem carries no native extensions and no
@@ -12,11 +12,11 @@
 - A pluggable `Fetcher` seam, with a net/http implementation that guards
   against redirects into private address ranges.
 - Charset detection, so Shift_JIS and EUC-JP decks decode correctly.
-- `slidescraper` CLI, printing JSON or one image URL per line.
+- `gento` CLI, printing JSON or one image URL per line.
 
 - robots.txt, obeyed by default (RFC 9309). A `RobotsFetcher` wraps whatever
   fetcher is in use, so every request an adapter makes is checked, not just
-  the deck page. `robots: false`, `--no-robots` and `SLIDESCRAPER_ROBOTS=off`
+  the deck page. `robots: false`, `--no-robots` and `GENTO_ROBOTS=off`
   turn it off. A robots.txt that cannot be read is treated as a refusal
   rather than as permission.
 
@@ -27,7 +27,7 @@
   and a switch between the thumbnail grid and a continuous vertical read.
   The choice is remembered. Built on `<dialog>` with no dependencies, and
   layered over markup that still works with JavaScript off.
-- `SLIDESCRAPER_USER_AGENT`, so a deployed container can change how it
+- `GENTO_USER_AGENT`, so a deployed container can change how it
   identifies itself without a rebuild.
 
 ### Fixed

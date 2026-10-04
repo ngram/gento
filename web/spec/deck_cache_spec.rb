@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Slidescraper::Web::DeckCache do
+RSpec.describe Gento::Web::DeckCache do
   subject(:cache) { described_class.new(ttl: 10, max_entries: 3, clock: -> { time[:now] }) }
 
   # A settable clock, so the TTL can be tested without sleeping.

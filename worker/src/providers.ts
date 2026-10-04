@@ -1,7 +1,7 @@
 /**
  * Host suffixes the gem's adapters claim.
  *
- * This duplicates `Slidescraper::Adapters::*.hosts` on purpose: rejecting an
+ * This duplicates `Gento::Adapters::*.hosts` on purpose: rejecting an
  * unsupported URL at the edge means never waking the container for a request
  * that was always going to be a 422. `test/providers.test.ts` reads the Ruby
  * source and fails if the two lists drift apart.
@@ -63,5 +63,5 @@ export function cacheKeyFor(deckUrl: string): string {
     url.pathname = url.pathname.slice(0, -1);
   }
 
-  return `https://slidescraper.invalid/deck?u=${encodeURIComponent(url.toString())}`;
+  return `https://gento.invalid/deck?u=${encodeURIComponent(url.toString())}`;
 }

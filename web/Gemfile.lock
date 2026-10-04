@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    slidescraper (0.1.0)
+    gento (0.1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -52,16 +52,17 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  gento!
   puma (~> 6.4)
   rack-test (~> 2.1)
   rackup (~> 2.2)
   rspec (~> 3.13)
   sinatra (~> 4.1)
-  slidescraper!
 
 CHECKSUMS
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962
+  gento (0.1.0)
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   mustermann (3.1.1) sha256=4c6170c7234d5499c345562ba7c7dfe73e1754286dcc1abb053064d66a127198
   nio4r (2.7.5) sha256=6c90168e48fb5f8e768419c93abb94ba2b892a1d0602cb06eef16d8b7df1dca1
@@ -77,7 +78,6 @@ CHECKSUMS
   rspec-mocks (3.13.8) sha256=086ad3d3d17533f4237643de0b5c42f04b66348c28bf6b9c2d3f4a3b01af1d47
   rspec-support (3.13.7) sha256=0640e5570872aafefd79867901deeeeb40b0c9875a36b983d85f54fb7381c47c
   sinatra (4.2.1) sha256=b7aeb9b11d046b552972ade834f1f9be98b185fa8444480688e3627625377080
-  slidescraper (0.1.0)
   tilt (2.8.0) sha256=ba472eb2716fe1e04112d6d219a9dae938ec09a6a1e2ad3ecc7922e79bde3721
 
 BUNDLED WITH

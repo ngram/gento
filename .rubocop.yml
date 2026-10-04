@@ -45,7 +45,7 @@ RSpec/MultipleExpectations:
   Max: 5
 
 # web/ is its own application root, so its spec paths mirror web/, not the
-# gem's lib/slidescraper/ layout.
+# gem's lib/gento/ layout.
 RSpec/SpecFilePathFormat:
   Exclude:
     - "web/spec/**/*"

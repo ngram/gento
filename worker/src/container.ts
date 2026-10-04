@@ -8,7 +8,7 @@ import { EGRESS_ALLOWLIST } from "./providers";
  * Workers cannot run Ruby, so the gem runs here and the Worker in front acts
  * as the public edge: routing, caching and validation.
  */
-export class SlidescraperContainer extends Container<Env> {
+export class GentoContainer extends Container<Env> {
   defaultPort = 8080;
 
   /**
@@ -31,15 +31,15 @@ export class SlidescraperContainer extends Container<Env> {
   };
 
   override onStart(): void {
-    console.log("slidescraper container started");
+    console.log("gento container started");
   }
 
   override onStop(): void {
-    console.log("slidescraper container stopped");
+    console.log("gento container stopped");
   }
 
   override onError(error: unknown): never {
-    console.error("slidescraper container error", error);
+    console.error("gento container error", error);
     throw error;
   }
 }

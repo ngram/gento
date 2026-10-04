@@ -2,4 +2,4 @@
 
 require_relative "app"
 
-run Slidescraper::Web::App
+run Gento::Web::App

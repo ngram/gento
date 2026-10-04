@@ -50,7 +50,7 @@ Cloudflare Workers そのものに ruby.wasm を載せた公開事例は見当�
 
 **ただし完全に捨ててはいません。** gem 側をネイティブ拡張ゼロ・HTTP 差し替え可能に
 設計してあるのは、この道を将来試せるようにするためです。
-`Slidescraper::Fetcher` を JS の `fetch` で実装すれば、ライブラリ本体は無改造で載ります。
+`Gento::Fetcher` を JS の `fetch` で実装すれば、ライブラリ本体は無改造で載ります。
 原稿のネタとしてはこちらの方が面白いので、実験枠として残しています。
 
 ## 採用した構成
@@ -65,7 +65,7 @@ Cloudflare Workers そのものに ruby.wasm を載せた公開事例は見当�
                           ▼
               ┌──────────────────────────┐
               │ Container (Ruby)         │
-              │  - Sinatra + slidescraper │
+              │  - Sinatra + gento       │
               │  - egress は4サイトのみ許可   │
               └──────────────────────────┘
 ```

@@ -55,5 +55,5 @@ npm install -g @anthropic-ai/claude-code || echo "(skipped: install it later wit
 echo
 echo "Ready. Try:"
 echo "  bundle exec rspec                       # 151 examples"
-echo "  docker build -f web/Dockerfile -t slidescraper-web ."
+echo "  docker build -f web/Dockerfile -t gento-web ."
 echo "  See docs/codespaces.md for the full walkthrough."

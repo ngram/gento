@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "slidescraper",
+  "name": "gento",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -13,7 +13,7 @@
   // depends on the gem by relative path.
   "containers": [
     {
-      "class_name": "SlidescraperContainer",
+      "class_name": "GentoContainer",
       "image": "../web/Dockerfile",
       "image_build_context": "..",
       "instance_type": "basic",
@@ -25,7 +25,7 @@
     "bindings": [
       {
         "name": "CONTAINER",
-        "class_name": "SlidescraperContainer"
+        "class_name": "GentoContainer"
       }
     ]
   },
@@ -33,7 +33,7 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["SlidescraperContainer"]
+      "new_sqlite_classes": ["GentoContainer"]
     }
   ]
 }

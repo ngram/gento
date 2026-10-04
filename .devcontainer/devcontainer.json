@@ -1,5 +1,5 @@
 {
-  "name": "slidescraper",
+  "name": "gento",
   // Pinned to bookworm on purpose, not just to a Ruby version. The floating
   // ":3.3" tag moved to Debian trixie, where the docker-in-docker feature
   // cannot install its default moby packages — the container build fails and

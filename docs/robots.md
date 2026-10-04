@@ -3,26 +3,26 @@
 **既定で ON です。** 取得先ホストの `robots.txt` を読み、拒否されているパスにはリクエストを
 送りません。RFC 9309 に沿って実装しています。
 
-対象はデッキページだけではありません。`Slidescraper::RobotsFetcher` が
-`Slidescraper::Fetcher` をラップする形になっているので、**アダプタが出すすべてのリクエスト**
+対象はデッキページだけではありません。`Gento::RobotsFetcher` が
+`Gento::Fetcher` をラップする形になっているので、**アダプタが出すすべてのリクエスト**
 （oEmbed エンドポイント、Docswell の embed ビュー、Google スライドの `/htmlpresent`）が
 同じ判定を通ります。
 
 ## 無効化
 
 ```ruby
-Slidescraper.scrape(url, robots: false)
-Slidescraper::Client.new(robots: false)
+Gento.scrape(url, robots: false)
+Gento::Client.new(robots: false)
 ```
 
 ```console
-$ slidescraper --no-robots URL
+$ gento --no-robots URL
 ```
 
 デモアプリは環境変数で切り替えます（既定 ON）。
 
 ```console
-$ docker run -e SLIDESCRAPER_ROBOTS=off ... slidescraper-web
+$ docker run -e GENTO_ROBOTS=off ... gento-web
 ```
 
 **無効化した場合、その判断と結果は利用者の責任です。**
@@ -57,11 +57,11 @@ RFC 9309 が定めるとおり、一致したパターンのうち**最も長い
 
 自分を名指ししているグループが1つだけ適用され、なければ `*` のグループが使われます。
 突き合わせるのは User-Agent 文字列全体ではなく**プロダクトトークン**
-（最初のスラッシュまで。`slidescraper/0.1.0 (+https://github.com/ngram/slidescraper)`
-なら `slidescraper`）です。文字列全体で部分一致させると、UA に含まれる URL のせいで
+（最初のスラッシュまで。`gento/0.1.0 (+https://github.com/ngram/gento)`
+なら `gento`）です。文字列全体で部分一致させると、UA に含まれる URL のせいで
 無関係なグループに巻き込まれます。
 
-`SLIDESCRAPER_USER_AGENT` や `--user-agent` で名乗りを変えると、**適用されるグループも変わります。**
+`GENTO_USER_AGENT` や `--user-agent` で名乗りを変えると、**適用されるグループも変わります。**
 たとえば SlideShare は複数のクローラを名指しで全面拒否しているので、それらに一致する名前を
 名乗れば、その時点で全ページが拒否されます。
 
@@ -99,18 +99,19 @@ Content-Type だけで弾く実装だと、この本物の規則を捨ててし�
 複数デッキをまとめて処理する場合は、この値を見て呼び出し側で待ってください。
 
 ```ruby
-fetcher = Slidescraper::RobotsFetcher.new(Slidescraper::NetHttpFetcher.new)
+fetcher = Gento::RobotsFetcher.new(Gento::NetHttpFetcher.new)
 fetcher.crawl_delay("https://docs.google.com/presentation/d/x/htmlpresent")  # => 1.0
 ```
 
 ## 各サービスの実際の内容
 
-2026年8月時点で実際に取得して確認した結果です。**4サービスとも、この gem がやっている
-取得は許可されています。**
+2026年10月時点で実際に取得し、既定の User-Agent（プロダクトトークン `gento`）で判定した
+結果です。**4サービスとも、この gem がやっている取得は許可されています。**
+`gento` を名指ししているグループはどこにもなく、`*` のグループが適用されます。
 
 | サービス | 内容 | この gem への影響 |
 | --- | --- | --- |
-| Speaker Deck | `/*signin?*`、`/*.atom*` など6件を拒否。`Accept: text/plain` が必要 | なし |
+| Speaker Deck | `/search`、`/*signin?*`、`/*.atom*` など7件を拒否。`Accept: text/plain` が必要 | なし |
 | SlideShare | 11グループ。`*` グループは `/api/`、`/search/`、`/slideshow/embed_code/` などを拒否。複数のクローラを名指しで全面拒否 | なし（デッキページは許可） |
 | Docswell | `Disallow: /slide/*/download` の1件のみ | なし（embed ビューは許可） |
 | Google スライド | `Allow: /presentation` ＋ `Disallow: /`、`Crawl-delay: 1` | なし（最長一致で許可） |

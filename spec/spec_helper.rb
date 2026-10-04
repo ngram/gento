@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "slidescraper"
-require "slidescraper/cli"
+require "gento"
+require "gento/cli"
 require_relative "support/stub_fetcher"
 require_relative "support/fixtures"
 

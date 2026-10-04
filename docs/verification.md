@@ -45,7 +45,7 @@ SlideShare は、JavaScript を実行しないクライアントに対して、�
 ```
 slide_share: https://www.slideshare.net/slideshow/ansiblenetwork201808/108457145 returned
 SlideShare's JavaScript bot challenge instead of the deck. Scraping SlideShare needs a
-JavaScript-capable Slidescraper::Fetcher; the default net/http one cannot get past it.
+JavaScript-capable Gento::Fetcher; the default net/http one cannot get past it.
 ```
 
 **判定はリクエストの内容ではなく、接続元 IP の評価で決まります。** そのため同じ URL が
@@ -69,11 +69,11 @@ $ curl -sS "https://www.slideshare.net/slideshow/ansiblenetwork201808/108457145"
    載ります。ヘッドレスブラウザ一式が必要になります。
 3. **SlideShare を使わない。** 他の3サービスはこの制限を受けません。
 
-デモアプリは `SLIDESCRAPER_USER_AGENT` で User-Agent を差し替えられるので、
+デモアプリは `GENTO_USER_AGENT` で User-Agent を差し替えられるので、
 2 を試す前に 1 かどうかを確認できます。
 
 ```console
 $ docker run --rm -p 8080:8080 \
-    -e SLIDESCRAPER_USER_AGENT="Mozilla/5.0 (compatible; slidescraper/0.1.0)" \
-    slidescraper-web
+    -e GENTO_USER_AGENT="Mozilla/5.0 (compatible; gento/0.1.0)" \
+    gento-web
 ```

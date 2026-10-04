@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-
-require "slidescraper"
-require "slidescraper/cli"
-
-exit Slidescraper::CLI.start(ARGV)

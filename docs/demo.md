@@ -42,8 +42,8 @@ JavaScript を切っていても各ページは画像へのリンクとして機
 | 変数 | 既定 | 用途 |
 | --- | --- | --- |
 | `PORT` | `8080` | 待ち受けポート |
-| `SLIDESCRAPER_USER_AGENT` | gem の既定 | 送出する User-Agent を差し替える |
-| `SLIDESCRAPER_ROBOTS` | `on` | `off` / `0` / `false` / `no` で robots.txt の参照をやめる |
+| `GENTO_USER_AGENT` | gem の既定 | 送出する User-Agent を差し替える |
+| `GENTO_ROBOTS` | `on` | `off` / `0` / `false` / `no` で robots.txt の参照をやめる |
 
 ## Cloudflare へのデプロイ
 

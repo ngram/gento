@@ -2,7 +2,7 @@ import { getContainer } from "@cloudflare/containers";
 
 import { cacheKeyFor, isSupportedUrl } from "./providers";
 
-export { SlidescraperContainer } from "./container";
+export { GentoContainer } from "./container";
 
 /** How long an extracted deck stays in the edge cache. */
 const CACHE_TTL_SECONDS = 60 * 60 * 6;
@@ -51,7 +51,7 @@ async function cached(
   const hit = await cache.match(key);
   if (hit) {
     const response = new Response(hit.body, hit);
-    response.headers.set("x-slidescraper-cache", "hit");
+    response.headers.set("x-gento-cache", "hit");
     return response;
   }
 
@@ -68,7 +68,7 @@ async function cached(
   );
 
   const fresh = new Response(response.body, response);
-  fresh.headers.set("x-slidescraper-cache", "miss");
+  fresh.headers.set("x-gento-cache", "miss");
   return fresh;
 }
 

@@ -1,29 +1,29 @@
 # RubyGems への公開手順
 
-`slidescraper` を RubyGems.org に公開するための手順です。
+`gento` を RubyGems.org に公開するための手順です。
 公開前に [docs/legal.md](legal.md) にも目を通してください。
 
 ## 現状
 
-- **gem 名 `slidescraper` は未使用です**（RubyGems API で確認済み。`slide_scraper` /
-  `slidescrape` も空いています）
-- `gem build slidescraper.gemspec` は警告なしで通り、22ファイルがパッケージされます
+- **gem 名 `gento` は未使用です**（2026年10月に RubyGems API で確認済み。
+  `gentou` も空いています）
+- `gem build gento.gemspec` は警告なしで通り、24ファイルがパッケージされます
   （`lib/`、`exe/`、README、CHANGELOG、LICENSE。テストとフィクスチャは含みません）
 
 ## 事前チェック
 
 ```console
 $ bundle exec rspec && bundle exec rubocop     # 151 examples / 0 offenses
-$ gem build slidescraper.gemspec               # 警告が出ないこと
-$ gem install ./slidescraper-0.1.0.gem         # 手元で入るか
-$ slidescraper --version
+$ gem build gento.gemspec                      # 警告が出ないこと
+$ gem install ./gento-0.1.0.gem                # 手元で入るか
+$ gento --version
 ```
 
 パッケージの中身は必ず確認してください。`spec.files` の glob を間違えると、
 不要なファイルが同梱されたり、逆に必要なファイルが欠けたりします。
 
 ```console
-$ tar -xOf slidescraper-0.1.0.gem data.tar.gz | tar -tzf -
+$ tar -xOf gento-0.1.0.gem data.tar.gz | tar -tzf -
 ```
 
 ## 方法A: 手元から push（最短）
@@ -32,7 +32,7 @@ $ tar -xOf slidescraper-0.1.0.gem data.tar.gz | tar -tzf -
 
 ```console
 $ gem signin                       # RubyGems.org のアカウントでサインイン
-$ gem push slidescraper-0.1.0.gem
+$ gem push gento-0.1.0.gem
 ```
 
 - アカウントは https://rubygems.org/sign_up で作成します
@@ -51,7 +51,7 @@ API キーを一切保存せずに、OIDC で GitHub Actions から公開する�
 自分が owner として登録されます。
 
 1. https://rubygems.org/profile/oidc/pending_trusted_publishers/new を開く
-2. gem 名、リポジトリのオーナー（`ngram`）、リポジトリ名（`slidescraper`）、
+2. gem 名、リポジトリのオーナー（`ngram`）、リポジトリ名（`gento`）、
    ワークフローのファイル名（`release.yml`）を入力。GitHub Environment は任意
 3. 下記のワークフローを `.github/workflows/release.yml` に置く
 
@@ -82,7 +82,7 @@ jobs:
 ## リリースの流れ
 
 ```console
-$ # lib/slidescraper/version.rb を編集
+$ # lib/gento/version.rb を編集
 $ # CHANGELOG.md の Unreleased を確定させる
 $ git commit -am "Release v0.1.0"
 $ git tag v0.1.0
@@ -92,7 +92,7 @@ $ git push origin main --tags        # 方法B ならこれで公開まで走る
 ## 公開後に取り消したい場合
 
 ```console
-$ gem yank slidescraper -v 0.1.0
+$ gem yank gento -v 0.1.0
 ```
 
 **yank しても同じバージョン番号で再公開はできません。** 番号を上げてください。

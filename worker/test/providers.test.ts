@@ -67,7 +67,7 @@ describe("host list", () => {
    * than silently 422-ing a supported deck.
    */
   it("matches the hosts the gem's adapters claim", () => {
-    const adapterDir = join(import.meta.dirname, "..", "..", "lib", "slidescraper", "adapters");
+    const adapterDir = join(import.meta.dirname, "..", "..", "lib", "gento", "adapters");
     const hosts = readdirSync(adapterDir)
       .filter((file) => file.endsWith(".rb") && file !== "base.rb")
       .flatMap((file) => {

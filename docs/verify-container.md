@@ -21,9 +21,8 @@ docker info > /dev/null && echo "daemon OK"
 ## 1. リポジトリを取得
 
 ```sh
-git clone https://github.com/ngram/slidescraper.git
-cd slidescraper
-git checkout claude/slide-scraping-gem-sf023s
+git clone https://github.com/ngram/gento.git
+cd gento
 ```
 
 ## 2. ビルド
@@ -33,25 +32,25 @@ git checkout claude/slide-scraping-gem-sf023s
 両方がコンテキストに入っている必要があります。
 
 ```sh
-docker build -f web/Dockerfile -t slidescraper-web .
+docker build -f web/Dockerfile -t gento-web .
 ```
 
 期待する結果:
 
 - `build` ステージで `bundle install` が通り、puma のネイティブ拡張がコンパイルされる
 - `runtime` ステージが `ruby:3.3-slim` ベースで出来上がる
-- 最終行が `naming to docker.io/library/slidescraper-web`
+- 最終行が `naming to docker.io/library/gento-web`
 
 イメージサイズを確認します。
 
 ```sh
-docker images slidescraper-web
+docker images gento-web
 ```
 
 ## 3. 起動
 
 ```sh
-docker run --rm -p 8080:8080 --name slidescraper-web slidescraper-web
+docker run --rm -p 8080:8080 --name gento-web gento-web
 ```
 
 `Puma starting` と `* Listening on http://0.0.0.0:8080` が出れば起動成功です。
@@ -73,14 +72,14 @@ curl -s localhost:8080/healthz
 Docker 側のヘルスチェックが `healthy` になることも確認します（30秒ほどかかります）。
 
 ```sh
-docker inspect --format '{{.State.Health.Status}}' slidescraper-web
+docker inspect --format '{{.State.Health.Status}}' gento-web
 # => healthy
 ```
 
 ### 4-2. 非 root で動いていること
 
 ```sh
-docker exec slidescraper-web id
+docker exec gento-web id
 # => uid=1000(app) gid=1000(app) groups=1000(app)
 ```
 
@@ -89,8 +88,8 @@ docker exec slidescraper-web id
 ### 4-3. gem が読み込まれていること
 
 ```sh
-docker exec slidescraper-web bundle exec ruby -e \
-  'require "slidescraper"; puts Slidescraper::VERSION; puts Slidescraper.providers.join(", ")'
+docker exec gento-web bundle exec ruby -e \
+  'require "gento"; puts Gento::VERSION; puts Gento.providers.join(", ")'
 # => 0.1.0
 # => speaker_deck, slide_share, docswell, google_slides
 ```
@@ -150,8 +149,8 @@ time curl -sG --data-urlencode "url=$U" localhost:8080/api/decks > /dev/null
 ## 5. 後始末
 
 ```sh
-docker stop slidescraper-web          # docker run を Ctrl-C でも可
-docker rmi slidescraper-web
+docker stop gento-web          # docker run を Ctrl-C でも可
+docker rmi gento-web
 ```
 
 ## つまずきやすいところ
@@ -170,7 +169,7 @@ docker rmi slidescraper-web
 ```sh
 docker build -f web/Dockerfile \
   --build-arg http_proxy="$http_proxy" --build-arg https_proxy="$https_proxy" \
-  -t slidescraper-web .
+  -t gento-web .
 ```
 
 なお gem 自体は `HTTPS_PROXY` を読むので、実行時のプロキシは

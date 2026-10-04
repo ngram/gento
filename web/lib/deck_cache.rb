@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Slidescraper
+module Gento
   module Web
     # A tiny in-process TTL cache with LRU eviction.
     #

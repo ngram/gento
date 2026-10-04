@@ -10,7 +10,7 @@ RSpec.configure do |config|
   config.include Rack::Test::Methods
 
   config.before do
-    Slidescraper::Web::App::CACHE.clear
+    Gento::Web::App::CACHE.clear
   end
 
   config.disable_monkey_patching!
