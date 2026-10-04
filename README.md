@@ -111,6 +111,7 @@ Gento.fetch(url, fetcher: MyFetcher.new)
 - [robots.txt の扱い](docs/robots.md) — 判定ルール、無効化、各サービスの実際の内容
 - [設計方針](docs/design.md) — 依存ゼロにした理由、Fetcher の差し替え、アダプタの足し方
 - [検証状況と既知の制限](docs/verification.md) — サービスごとの注意点、SlideShare のボット判定
+- [手元で試す](docs/development.md) — `main` を取得して gem・CLI・デモアプリを動かす
 - [デモ Web サービス](docs/demo.md) — `web/` の動かしかたと Cloudflare へのデプロイ
 - [利用にあたっての注意](docs/legal.md)
 - [RubyGems への公開手順](docs/publishing.md)

@@ -44,6 +44,8 @@ JavaScript を切っていても各ページは画像へのリンクとして機
 | `PORT` | `8080` | 待ち受けポート |
 | `GENTO_USER_AGENT` | gem の既定 | 送出する User-Agent を差し替える |
 | `GENTO_ROBOTS` | `on` | `off` / `0` / `false` / `no` で robots.txt の参照をやめる |
+| `GENTO_CACHE_TTL` | `3600` | 取得したデッキをメモリにキャッシュしておく秒数 |
+| `GENTO_CACHE_ENTRIES` | `500` | キャッシュしておくデッキの最大件数（超えたら、最近使われていないものから捨てる） |
 
 ## Cloudflare へのデプロイ
 
