@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1
+
+### Changed
+
+- The gemspec no longer lists a contact email. Questions and bug reports go
+  to the issue tracker linked from the gem's page.
+
 ## 0.1.0
 
 ### Added

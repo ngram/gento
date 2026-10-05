@@ -66,7 +66,7 @@ Cloudflare Containers はこのエンドポイントで起動を判定します�
 
 ```sh
 curl -s localhost:8080/healthz
-# => {"status":"ok","version":"0.1.0"}
+# => {"status":"ok","version":"0.1.1"}
 ```
 
 Docker 側のヘルスチェックが `healthy` になることも確認します（30秒ほどかかります）。
@@ -90,7 +90,7 @@ docker exec gento-web id
 ```sh
 docker exec gento-web bundle exec ruby -e \
   'require "gento"; puts Gento::VERSION; puts Gento.providers.join(", ")'
-# => 0.1.0
+# => 0.1.1
 # => speaker_deck, slide_share, docswell, google_slides
 ```
 

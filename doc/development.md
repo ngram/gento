@@ -92,14 +92,14 @@ $ bundle exec irb -r gento
 
 ## 5. gem としてインストールして試す
 
-RubyGems.org にはまだ公開していないので、`gem install gento` では入りません。
-手元でビルドしてインストールします。
+RubyGems.org に公開済みの版は `gem install gento` で入ります。`main` の最新を試すときは、
+手元でビルドしてインストールします。`gem install --local gento` は、今いるフォルダにある
+`gento-*.gem` を探して入れるので、版の番号を書かずに済みます。
 
 ```console
 $ gem build gento.gemspec
-$ gem install ./gento-0.1.0.gem
+$ gem install --local gento
 $ gento --version
-0.1.0
 ```
 
 元に戻すときは `gem uninstall gento` です。

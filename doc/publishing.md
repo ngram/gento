@@ -15,7 +15,7 @@
 ```console
 $ bundle exec rspec && bundle exec rubocop     # 151 examples / 0 offenses
 $ gem build gento.gemspec                      # 警告が出ないこと
-$ gem install ./gento-0.1.0.gem                # 手元で入るか
+$ gem install --local gento                    # 手元で入るか
 $ gento --version
 ```
 
@@ -23,8 +23,10 @@ $ gento --version
 不要なファイルが同梱されたり、逆に必要なファイルが欠けたりします。
 
 ```console
-$ tar -xOf gento-0.1.0.gem data.tar.gz | tar -tzf -
+$ tar -xOf gento-0.1.1.gem data.tar.gz | tar -tzf -
 ```
+
+ファイル名の `0.1.1` は、`lib/gento/version.rb` の `VERSION` に読み替えてください（以下同じ）。
 
 ## 方法A: 手元から push（最短）
 
@@ -32,7 +34,7 @@ $ tar -xOf gento-0.1.0.gem data.tar.gz | tar -tzf -
 
 ```console
 $ gem signin                       # RubyGems.org のアカウントでサインイン
-$ gem push gento-0.1.0.gem
+$ gem push gento-0.1.1.gem
 ```
 
 - アカウントは https://rubygems.org/sign_up で作成します
