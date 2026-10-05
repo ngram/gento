@@ -1,0 +1,29 @@
+# Publishes the gem to RubyGems.org when a version tag (v0.1.0, ...) is pushed.
+#
+# Authenticates with Trusted Publishing (OIDC), so no API key is stored
+# anywhere. RubyGems.org only accepts the push from this repository and this
+# file name (release.yml); renaming the file breaks publishing until the
+# trusted publisher is updated to match. See docs/publishing.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required: the OIDC token Trusted Publishing exchanges for a key
+      contents: write   # `rake release` would push the tag if it did not exist yet
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      # Runs `rake release`. The pushed tag already exists, so that skips
+      # tagging and pushing, then builds the gem and pushes it.
+      - uses: rubygems/release-gem@v1
