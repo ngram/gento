@@ -11,6 +11,8 @@ gem・CLI・デモアプリの順に、必要なところまで進めてくだ�
 | Worker | Node.js 22（CI と同じ） |
 | コンテナ | Docker（任意） |
 
+Windows では手順が一部変わります。[Windows の場合](#windows-の場合) も参照してください。
+
 ## 1. 取得する
 
 ```console
@@ -42,19 +44,22 @@ $ (cd worker && npm ci && npm test && npm run typecheck)
 
 `bundler: command not found: rspec` と出る環境では、同梱の binstub を使ってください
 （`bin/rspec`、`bin/rubocop`、`web/bin/rspec`）。gem の実行ファイルの置き場が
-`PATH` に入っていない環境で起きます。
+`PATH` に入っていない macOS・Linux の環境で起きます。Windows では binstub は使えませんが、
+`bundle exec rspec` がそのまま動きます。
 
 ## 3. CLI で試す
 
 インストールしなくても、リポジトリから直接動かせます。
+`ruby` を通して起動しているのは、Windows では拡張子のない `exe/gento` をそのまま実行できないためです。
+macOS・Linux でも同じコマンドで動きます。
 
 ```console
-$ bundle exec exe/gento --format urls https://speakerdeck.com/axbom/what-does-ai-have-to-do-with-human-rights
+$ bundle exec ruby exe/gento --format urls https://speakerdeck.com/axbom/what-does-ai-have-to-do-with-human-rights
 https://files.speakerdeck.com/presentations/.../slide_0.jpg
 https://files.speakerdeck.com/presentations/.../slide_1.jpg
 ...
 
-$ bundle exec exe/gento https://speakerdeck.com/axbom/what-does-ai-have-to-do-with-human-rights
+$ bundle exec ruby exe/gento https://speakerdeck.com/axbom/what-does-ai-have-to-do-with-human-rights
 {
   "provider": "speaker_deck",
   "title": "What does AI have to do with Human Rights?",
@@ -62,7 +67,7 @@ $ bundle exec exe/gento https://speakerdeck.com/axbom/what-does-ai-have-to-do-wi
   ...
 }
 
-$ bundle exec exe/gento --help
+$ bundle exec ruby exe/gento --help
 ```
 
 **ここから先は、実際に各サービスへアクセスします。** `robots.txt` は既定で参照します
@@ -157,9 +162,39 @@ http://localhost:8787 で待ち受けます。Containers のローカル実行�
 挙動に癖があります。まずは 7. のデモアプリ単体で確認するほうが確実です。
 Cloudflare へのデプロイは [docs/demo.md](demo.md#cloudflare-へのデプロイ) を参照してください。
 
+## Windows の場合
+
+ここまでのコマンドは macOS・Linux のシェルを前提にしています。Windows（コマンドプロンプト・
+PowerShell）では、次の点が違います。
+
+**Ruby は RubyInstaller の「Ruby+Devkit」版を入れてください。** インストール後に `ridk install` で
+MSYS2 を用意します。デモアプリが使う puma と nio4r は、インストール時に C 拡張をビルドするためです。
+
+**CLI は `bundle exec ruby exe/gento` で起動します。** `bundle exec exe/gento` と打つと
+`bundler: command not found: exe/gento` になり、`bundle install` しても直りません。
+Windows は実行できるかどうかを拡張子で判断するので、Bundler が拡張子のない `exe/gento` を
+コマンドとして見つけられないためです。`gem install` でインストールした場合は、RubyGems が
+`gento.bat` を作るので、`gento` で直接起動できます。
+
+そのほか、書き方が変わるところです。
+
+| この文書での書き方 | Windows での書き方 |
+| --- | --- |
+| `bin/rspec` などの binstub | 拡張子がないので起動できません。`bundle exec rspec` がそのまま動くので、binstub は不要です |
+| `(cd web && bundle install && bundle exec rspec)` | 1行ずつ実行します（`cd web` → `bundle install` → `bundle exec rspec` → `cd ..`）。コマンドプロンプトでは括弧の中の `cd` が戻らず、Windows PowerShell 5.1 は `&&` に対応していません |
+| `PORT=9292 bundle exec puma …` | 先に、コマンドプロンプトなら `set PORT=9292`、PowerShell なら `$env:PORT = "9292"` を実行します |
+| 行末の `\` で折り返したコマンド | 1行で書きます |
+| `curl …` | Windows PowerShell 5.1 では `curl` が `Invoke-WebRequest` の別名なので、`curl.exe` と打ちます |
+
+デモアプリの `bundle install` で、`web/Gemfile.lock` に Windows のプラットフォームが書き足される
+ことがあります。その差分はコミットしなくて大丈夫です。
+
 ## つまずきやすいところ
 
-**`bundler: command not found: rspec`（`puma` なども）**
+**Windows で `bundler: command not found: exe/gento`**
+`bundle exec ruby exe/gento` で起動してください（[Windows の場合](#windows-の場合)）。
+
+**macOS・Linux で `bundler: command not found: rspec`（`puma` なども）**
 gem の実行ファイルの置き場が `PATH` に入っていません。`bin/` の binstub を使うか、
 `PATH="$(ruby -e 'print Gem.bindir'):$PATH"` を付けて実行してください。
 
