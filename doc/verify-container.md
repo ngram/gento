@@ -5,7 +5,7 @@
 古い環境なら `docker-compose` に読み替えてください）。
 
 手元に Docker のあるマシンがない場合は、GitHub Codespaces で同じことができます。
-iPhone だけで完結する手順を [docs/codespaces.md](codespaces.md) にまとめてあります
+iPhone だけで完結する手順を [doc/codespaces.md](codespaces.md) にまとめてあります
 （Cloudflare へのデプロイまで含む）。
 
 所要時間は初回ビルドで 3〜5分程度です。
@@ -179,7 +179,7 @@ docker build -f web/Dockerfile \
 `bot challenge` を含むエラーが返っていれば、SlideShare 側のボット判定に
 当たっています。判定は接続元 IP の評価で決まるため、データセンターの IP からは
 恒常的に弾かれます。仕様どおりの挙動です
-（[docs/verification.md](verification.md#slideshare-のボット判定について)）。
+（[doc/verification.md](verification.md#slideshare-のボット判定について)）。
 
 ## Cloudflare へのデプロイまで確認する場合
 

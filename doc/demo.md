@@ -52,7 +52,7 @@ JavaScript を切っていても各ページは画像へのリンクとして機
 Workers では Ruby が動かないため、**Worker（TypeScript）を公開窓口に、
 Ruby アプリを Cloudflare Containers で動かす**構成にしています。
 判断の経緯と ruby.wasm を本命にしなかった理由は
-[docs/cloudflare.md](cloudflare.md) に書いています。
+[doc/cloudflare.md](cloudflare.md) に書いています。
 
 ```console
 $ cd worker && npm ci
@@ -62,5 +62,5 @@ $ npx wrangler deploy
 Containers の利用には Workers Paid プラン（$5/月）が必要です。
 
 コンテナイメージをローカルの Docker で検証する手順は
-[docs/verify-container.md](verify-container.md) にまとめています。
-手元に Docker がない場合は [docs/codespaces.md](codespaces.md) を参照してください。
+[doc/verify-container.md](verify-container.md) にまとめています。
+手元に Docker がない場合は [doc/codespaces.md](codespaces.md) を参照してください。

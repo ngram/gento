@@ -26,7 +26,7 @@ $ docker run -e GENTO_ROBOTS=off ... gento-web
 ```
 
 **無効化した場合、その判断と結果は利用者の責任です。**
-[docs/legal.md](legal.md) を参照してください。
+[doc/legal.md](legal.md) を参照してください。
 
 ## 判定ルール
 

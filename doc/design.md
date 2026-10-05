@@ -37,7 +37,7 @@ Gento::Registry.default.register(MyAdapter)
 取得先の `robots.txt` を既定で参照します。`Gento::RobotsFetcher` が
 `Fetcher` をラップする形なので、アダプタが出すすべてのリクエストが同じ判定を通り、
 差し替えられた `Fetcher` の上でも同じように効きます。
-判定ルールと無効化の手段は [docs/robots.md](robots.md) にまとめています。
+判定ルールと無効化の手段は [doc/robots.md](robots.md) にまとめています。
 
 ## SSRF に対する備え
 

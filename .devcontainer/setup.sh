@@ -56,4 +56,4 @@ echo
 echo "Ready. Try:"
 echo "  bundle exec rspec                       # 151 examples"
 echo "  docker build -f web/Dockerfile -t gento-web ."
-echo "  See docs/codespaces.md for the full walkthrough."
+echo "  See doc/codespaces.md for the full walkthrough."

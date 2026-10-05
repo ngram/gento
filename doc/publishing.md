@@ -1,7 +1,7 @@
 # RubyGems への公開手順
 
 `gento` を RubyGems.org に公開するための手順です。
-公開前に [docs/legal.md](legal.md) にも目を通してください。
+公開前に [doc/legal.md](legal.md) にも目を通してください。
 
 ## 現状
 

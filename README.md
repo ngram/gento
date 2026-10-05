@@ -74,7 +74,7 @@ $ gento --no-robots https://speakerdeck.com/user/talk
 拒否された場合は `Gento::RobotsDisallowedError` になります。
 `robots.txt` 自体を読めなかったとき（5xx・429・接続失敗）も、RFC 9309 に従って拒否扱いです。
 
-詳細は [docs/robots.md](docs/robots.md) を参照してください。
+詳細は [doc/robots.md](doc/robots.md) を参照してください。
 
 ### HTTP クライアントの差し替え
 
@@ -84,7 +84,7 @@ $ gento --no-robots https://speakerdeck.com/user/talk
 Gento.fetch(url, fetcher: MyFetcher.new)
 ```
 
-詳細は [docs/design.md](docs/design.md) を参照してください。
+詳細は [doc/design.md](doc/design.md) を参照してください。
 
 ### エラー
 
@@ -99,22 +99,22 @@ Gento.fetch(url, fetcher: MyFetcher.new)
 
 **SlideShare は接続元 IP によってボット判定で弾かれることがあり**、その場合は
 `ExtractionError` になります。データセンターの IP からは恒常的に弾かれます
-（[docs/verification.md](docs/verification.md#slideshare-のボット判定について)）。
+（[doc/verification.md](doc/verification.md#slideshare-のボット判定について)）。
 
 ## 利用にあたっての注意
 
 **対象サービスの利用規約を確認し、遵守する責任は利用者にあります。**
-[docs/legal.md](docs/legal.md) を読んでから使ってください。
+[doc/legal.md](doc/legal.md) を読んでから使ってください。
 
 ## ドキュメント
 
-- [robots.txt の扱い](docs/robots.md) — 判定ルール、無効化、各サービスの実際の内容
-- [設計方針](docs/design.md) — 依存ゼロにした理由、Fetcher の差し替え、アダプタの足し方
-- [検証状況と既知の制限](docs/verification.md) — サービスごとの注意点、SlideShare のボット判定
-- [手元で試す](docs/development.md) — `main` を取得して gem・CLI・デモアプリを動かす
-- [デモ Web サービス](docs/demo.md) — `web/` の動かしかたと Cloudflare へのデプロイ
-- [利用にあたっての注意](docs/legal.md)
-- [RubyGems への公開手順](docs/publishing.md)
+- [robots.txt の扱い](doc/robots.md) — 判定ルール、無効化、各サービスの実際の内容
+- [設計方針](doc/design.md) — 依存ゼロにした理由、Fetcher の差し替え、アダプタの足し方
+- [検証状況と既知の制限](doc/verification.md) — サービスごとの注意点、SlideShare のボット判定
+- [手元で試す](doc/development.md) — `main` を取得して gem・CLI・デモアプリを動かす
+- [デモ Web サービス](doc/demo.md) — `web/` の動かしかたと Cloudflare へのデプロイ
+- [利用にあたっての注意](doc/legal.md)
+- [RubyGems への公開手順](doc/publishing.md)
 
 ## 開発
 
@@ -127,7 +127,7 @@ $ (cd worker && npm test && npm run typecheck)  # Worker     15 tests
 ```
 
 GitHub Codespaces なら `.devcontainer/` が上記をすべて用意します
-（[docs/codespaces.md](docs/codespaces.md)）。
+（[doc/codespaces.md](doc/codespaces.md)）。
 
 ## 由来
 

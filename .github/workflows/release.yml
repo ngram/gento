@@ -3,7 +3,7 @@
 # Authenticates with Trusted Publishing (OIDC), so no API key is stored
 # anywhere. RubyGems.org only accepts the push from this repository and this
 # file name (release.yml); renaming the file breaks publishing until the
-# trusted publisher is updated to match. See docs/publishing.md.
+# trusted publisher is updated to match. See doc/publishing.md.
 name: Release
 
 on:

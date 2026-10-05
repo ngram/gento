@@ -10,6 +10,6 @@ coverage
 spec
 web/spec
 worker
-docs
+doc
 *.gem
 Gemfile.lock

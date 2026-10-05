@@ -44,7 +44,7 @@ gem のテストはソケットを一切開かない設計なので、Codespaces
 docker info      # デーモンの生存確認
 ```
 
-これが通れば [docs/verify-container.md](verify-container.md) の手順がそのまま使えます。
+これが通れば [doc/verify-container.md](verify-container.md) の手順がそのまま使えます。
 **ビルドコンテキストはリポジトリのルート**である点にだけ注意してください
 （デモアプリが gem を `path: ".."` で参照しているため、`web/` を指定すると失敗します）。
 
@@ -178,7 +178,7 @@ claude
 
 OAuth ログイン後は、指示だけで作業できます。
 
-> docs/verify-container.md の手順どおりにコンテナをビルドして起動し、4サービス分の URL で疎通確認して結果を報告して
+> doc/verify-container.md の手順どおりにコンテナをビルドして起動し、4サービス分の URL で疎通確認して結果を報告して
 
 同じ要領で、新しく見つかった不具合や対応サービスの追加もそのまま任せられます。
 

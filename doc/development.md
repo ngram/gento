@@ -71,13 +71,13 @@ $ bundle exec ruby exe/gento --help
 ```
 
 **ここから先は、実際に各サービスへアクセスします。** `robots.txt` は既定で参照します
-（[docs/robots.md](robots.md)）。対象サービスの利用規約の確認は利用者の責任です
-（[docs/legal.md](legal.md)）。
+（[doc/robots.md](robots.md)）。対象サービスの利用規約の確認は利用者の責任です
+（[doc/legal.md](legal.md)）。
 
 4サービスそれぞれのサンプル URL と、期待するページ数は
-[docs/verify-container.md](verify-container.md#4-4-実際に取得できること) にあります。
+[doc/verify-container.md](verify-container.md#4-4-実際に取得できること) にあります。
 SlideShare はデータセンターの IP からだと弾かれますが、家庭用回線からなら通ることが多いです
-（[docs/verification.md](verification.md#slideshare-のボット判定について)）。
+（[doc/verification.md](verification.md#slideshare-のボット判定について)）。
 
 ## 4. Ruby から試す
 
@@ -139,7 +139,7 @@ $ curl -sG --data-urlencode "url=https://speakerdeck.com/axbom/what-does-ai-have
     localhost:8080/api/decks
 ```
 
-環境変数は [docs/demo.md](demo.md#環境変数) にまとめています。
+環境変数は [doc/demo.md](demo.md#環境変数) にまとめています。
 
 Docker で動かす場合は、リポジトリのルートで実行します。
 
@@ -148,7 +148,7 @@ $ docker compose up --build
 ```
 
 コンテナで確認する項目（非 root での実行、ヘルスチェックなど）は
-[docs/verify-container.md](verify-container.md) にあります。
+[doc/verify-container.md](verify-container.md) にあります。
 
 ## 8. Worker を動かす（任意）
 
@@ -160,7 +160,7 @@ $ npx wrangler dev
 
 http://localhost:8787 で待ち受けます。Containers のローカル実行には Docker が必要で、
 挙動に癖があります。まずは 7. のデモアプリ単体で確認するほうが確実です。
-Cloudflare へのデプロイは [docs/demo.md](demo.md#cloudflare-へのデプロイ) を参照してください。
+Cloudflare へのデプロイは [doc/demo.md](demo.md#cloudflare-へのデプロイ) を参照してください。
 
 ## Windows の場合
 
@@ -200,8 +200,8 @@ gem の実行ファイルの置き場が `PATH` に入っていません。`bin/
 
 **SlideShare だけ `ExtractionError`（bot challenge）になる**
 接続元 IP の評価で弾かれています。gem 側の問題ではありません
-（[docs/verification.md](verification.md#slideshare-のボット判定について)）。
+（[doc/verification.md](verification.md#slideshare-のボット判定について)）。
 
 **`RobotsDisallowedError` になる**
 取得先の `robots.txt` が拒否しているか、`robots.txt` 自体を読めなかった（5xx・429・接続失敗）
-ときに起きます。判定のルールは [docs/robots.md](robots.md) を参照してください。
+ときに起きます。判定のルールは [doc/robots.md](robots.md) を参照してください。
