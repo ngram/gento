@@ -7,7 +7,9 @@
 - The gemspec no longer lists a contact email. Questions and bug reports go
   to the issue tracker linked from the gem's page.
 
-## 0.1.0
+## 0.1.0 (yanked)
+
+Yanked from RubyGems.org. Install 0.1.1 instead; its library code is the same.
 
 ### Added
 
