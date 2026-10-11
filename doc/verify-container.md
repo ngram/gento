@@ -1,14 +1,14 @@
 # コンテナイメージの検証手順
 
 `web/Dockerfile` をローカルの Docker でビルドして動作確認するための手順です。
-一般的な Linux + Docker 環境を想定しています（`docker compose` が使える前提。
+一般的な Linux + Docker 環境を想定しています（`docker compose` が使える前提です。
 古い環境なら `docker-compose` に読み替えてください）。
 
 手元に Docker のあるマシンがない場合は、GitHub Codespaces で同じことができます。
-iPhone だけで完結する手順を [doc/codespaces.md](codespaces.md) にまとめてあります
-（Cloudflare へのデプロイまで含む）。
+iPhone だけで完結する手順を、Cloudflare へのデプロイまで含めて
+[doc/codespaces.md](codespaces.md) にまとめてあります。
 
-所要時間は初回ビルドで 3〜5分程度です。
+所要時間は、初回ビルドで 3〜5分程度です。
 
 ## 0. 前提の確認
 
@@ -83,7 +83,7 @@ docker exec gento-web id
 # => uid=1000(app) gid=1000(app) groups=1000(app)
 ```
 
-`uid=0(root)` が返ってきたら `USER app` が効いていません。
+`uid=0(root)` が返ってきたら、Dockerfile の `USER app` が反映されていません。
 
 ### 4-3. gem が読み込まれていること
 
@@ -96,7 +96,7 @@ docker exec gento-web bundle exec ruby -e \
 
 ### 4-4. 実際に取得できること
 
-4サービスを一通り。ネットワークに出るので数秒かかります。
+4サービスを一通り取得します。実際に各サービスへアクセスするので、数秒かかります。
 
 ```sh
 for u in \
@@ -136,9 +136,9 @@ curl -s -o /dev/null -w "%{http_code}\n" "localhost:8080/api/decks?url=https://e
 curl -s -o /dev/null -w "%{http_code}\n" "localhost:8080/nope"                            # 404
 ```
 
-### 4-7. キャッシュが効いていること
+### 4-7. 2回目がキャッシュから返ること
 
-同じ URL を2回投げると、2回目は目に見えて速くなります。
+同じ URL を2回リクエストすると、2回目はキャッシュから返るので目に見えて速くなります。
 
 ```sh
 U="https://www.docswell.com/s/Akira_Ikeda/Z7N1RD-2026-07-24-JaSST26Hokkaido"
@@ -164,7 +164,8 @@ docker rmi gento-web
 `cd web && bundle install` でロックを更新してコミットし直してください。
 
 **`bundle install` がネットワークで失敗する**
-プロキシ環境なら `--build-arg` ではなくビルド時の環境変数が必要です。
+プロキシ環境では、ホストのプロキシ設定はビルドに引き継がれません。
+`--build-arg` で、ビルド時の環境変数として渡してください。
 
 ```sh
 docker build -f web/Dockerfile \
@@ -173,12 +174,12 @@ docker build -f web/Dockerfile \
 ```
 
 なお gem 自体は `HTTPS_PROXY` を読むので、実行時のプロキシは
-`docker run -e HTTPS_PROXY=... ` を渡すだけで通ります。
+`docker run -e HTTPS_PROXY=...` で渡すだけで通ります。
 
 **4-4 で SlideShare だけ失敗する**
 `bot challenge` を含むエラーが返っていれば、SlideShare 側のボット判定に
 当たっています。判定は接続元 IP の評価で決まるため、データセンターの IP からは
-恒常的に弾かれます。仕様どおりの挙動です
+恒常的に弾かれます。gem の不具合ではありません
 （[doc/verification.md](verification.md#slideshare-のボット判定について)）。
 
 ## Cloudflare へのデプロイまで確認する場合

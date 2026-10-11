@@ -19,17 +19,14 @@
 - A pluggable `Fetcher` seam, with a net/http implementation that guards
   against redirects into private address ranges.
 - Charset detection, so Shift_JIS and EUC-JP decks decode correctly.
-- `gento` CLI, printing JSON or one image URL per line.
-
+- A `gento` CLI, printing JSON or one image URL per line.
 - robots.txt, obeyed by default (RFC 9309). A `RobotsFetcher` wraps whatever
   fetcher is in use, so every request an adapter makes is checked, not just
   the deck page. `robots: false`, `--no-robots` and `GENTO_ROBOTS=off`
   turn it off. A robots.txt that cannot be read is treated as a refusal
   rather than as permission.
-
 - Proxy support in the net/http fetcher, honouring `HTTPS_PROXY` (which
   net/http ignores on its own) and bypassing it for private addresses.
-
 - The demo's viewer: a lightbox on clicking a page, with arrow-key paging,
   and a switch between the thumbnail grid and a continuous vertical read.
   The choice is remembered. Built on `<dialog>` with no dependencies, and
@@ -43,7 +40,6 @@
   the same name was invisible — which is most of the markup on a real page.
 - Typographic entities such as `&hellip;` and `&mdash;` were left undecoded.
 - Titles carrying the author's own line breaks are collapsed to single spaces.
-
 - Google Slides decks published to the web return the signed `viewpage` URLs
   embedded in the document. `/export/png` answers 404 for those decks, so the
   URLs it would have built were unusable. Ordinary shared decks keep using

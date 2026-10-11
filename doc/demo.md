@@ -1,7 +1,7 @@
 # デモ Web サービス
 
 `web/` は gem の動作を確認するための小さな Sinatra アプリです。
-URL を入力するとページ画像を一覧表示します。画像は各サービスのオリジナル URL を
+URL を入力すると、ページ画像を一覧表示します。画像は各サービスのオリジナル URL を
 参照するだけで、再ホストはしません。
 
 ## 動かす
@@ -13,7 +13,7 @@ $ bundle exec puma -C config/puma.rb config.ru
 ```
 
 Docker で動かす場合、ビルドコンテキストは**リポジトリのルート**です
-（デモが gem を相対パス参照しているため）。
+（デモアプリが gem を相対パスで参照しているため）。
 
 ```console
 $ docker compose up --build
@@ -35,7 +35,7 @@ $ curl "http://localhost:8080/api/decks?url=https://speakerdeck.com/user/talk"
 どちらのモードでも、ページをクリックするとその場でライトボックスが開きます。
 `←` `→` でページ送り、`Esc` で閉じます。閉じると直前に見ていたページまでスクロールが戻ります。
 
-JavaScript を切っていても各ページは画像へのリンクとして機能します。
+JavaScript を無効にしている場合は一覧モードだけになり、各ページは画像へのリンクとして機能します。
 
 ## 環境変数
 
@@ -49,9 +49,9 @@ JavaScript を切っていても各ページは画像へのリンクとして機
 
 ## Cloudflare へのデプロイ
 
-Workers では Ruby が動かないため、**Worker（TypeScript）を公開窓口に、
-Ruby アプリを Cloudflare Containers で動かす**構成にしています。
-判断の経緯と ruby.wasm を本命にしなかった理由は
+Workers では Ruby が動かないため、**外部からのリクエストは Worker（TypeScript）で受け、
+Ruby アプリは Cloudflare Containers で動かす**構成にしています。
+判断の経緯と、ruby.wasm を採用しなかった理由は
 [doc/cloudflare.md](cloudflare.md) に書いています。
 
 ```console

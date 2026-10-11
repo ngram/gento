@@ -59,7 +59,7 @@ https://files.speakerdeck.com/presentations/.../slide_0.jpg
 
 ### robots.txt
 
-**取得先の `robots.txt` を既定で参照し、拒否されているパスは取りに行きません。**
+**取得先の `robots.txt` を既定で参照し、拒否されているパスにはリクエストを送りません。**
 デッキページだけでなく、アダプタが出すすべてのリクエスト（oEmbed、embed ビューなど）が対象です。
 
 ```ruby
@@ -72,7 +72,7 @@ $ gento --no-robots https://speakerdeck.com/user/talk
 ```
 
 拒否された場合は `Gento::RobotsDisallowedError` になります。
-`robots.txt` 自体を読めなかったとき（5xx・429・接続失敗）も、RFC 9309 に従って拒否扱いです。
+`robots.txt` 自体を読めなかったとき（5xx・429・接続失敗）も、拒否として扱います。
 
 詳細は [doc/robots.md](doc/robots.md) を参照してください。
 
@@ -97,7 +97,7 @@ Gento.fetch(url, fetcher: MyFetcher.new)
 
 いずれも `Gento::Error` を継承しています。
 
-**SlideShare は接続元 IP によってボット判定で弾かれることがあり**、その場合は
+**SlideShare は、接続元 IP によってはボット判定でリクエストを弾きます。** その場合は
 `ExtractionError` になります。データセンターの IP からは恒常的に弾かれます
 （[doc/verification.md](doc/verification.md#slideshare-のボット判定について)）。
 
@@ -126,13 +126,13 @@ $ (cd web && bundle exec rspec)                 # デモアプリ 27 examples
 $ (cd worker && npm test && npm run typecheck)  # Worker     15 tests
 ```
 
-GitHub Codespaces なら `.devcontainer/` が上記をすべて用意します
+GitHub Codespaces では、上記のコマンドに必要な環境を `.devcontainer/` がすべて用意します
 （[doc/codespaces.md](doc/codespaces.md)）。
 
 ## 由来
 
 技術書典5 で頒布した『てっくやみなべ Vol.1』所収
-「快適なスライド閲覧⽣活を実現する Web サービスの開発」のサポートリポジトリを、
+「快適なスライド閲覧生活を実現する Web サービスの開発」のサポートリポジトリを、
 現在も動く形で作り直したものです。当時の Lambda / PaaS 向けデプロイコードは、
 対象サービスが終了したため Cloudflare 向けに置き換えています。
 

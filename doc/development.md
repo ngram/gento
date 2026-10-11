@@ -76,7 +76,7 @@ $ bundle exec ruby exe/gento --help
 
 4サービスそれぞれのサンプル URL と、期待するページ数は
 [doc/verify-container.md](verify-container.md#4-4-実際に取得できること) にあります。
-SlideShare はデータセンターの IP からだと弾かれますが、家庭用回線からなら通ることが多いです
+SlideShare はデータセンターの IP からは弾かれますが、家庭用回線からなら多くの場合は通ります
 （[doc/verification.md](verification.md#slideshare-のボット判定について)）。
 
 ## 4. Ruby から試す
@@ -187,7 +187,7 @@ Windows は実行できるかどうかを拡張子で判断するので、Bundle
 | `curl …` | Windows PowerShell 5.1 では `curl` が `Invoke-WebRequest` の別名なので、`curl.exe` と打ちます |
 
 デモアプリの `bundle install` で、`web/Gemfile.lock` に Windows のプラットフォームが書き足される
-ことがあります。その差分はコミットしなくて大丈夫です。
+ことがあります。その差分はコミットする必要はありません。
 
 ## つまずきやすいところ
 

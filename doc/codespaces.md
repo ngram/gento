@@ -12,7 +12,8 @@ Codespace を起動すればそのまま使えます。
 
 Safari で `github.com/codespaces/new` を開く → リポジトリと**ブランチ**を選ぶ → Create。
 
-初回は docker-in-docker のセットアップと3つの依存関係インストールで **5〜8分**かかります。
+初回は、docker-in-docker のセットアップと、gem・デモアプリ・Worker の依存関係のインストールで
+**5〜8分**かかります。
 `postCreateCommand` が終わるまでターミナルは使えないので、待ってください。
 
 マシンタイプは **2-core のまま**にしておきます。`.devcontainer/devcontainer.json` で
@@ -22,13 +23,13 @@ Safari で `github.com/codespaces/new` を開く → リポジトリと**ブラ�
 ## 1. iPhone で操作しやすくする
 
 - 起動したら共有ボタン → **ホーム画面に追加**。Safari のアドレスバーが消えて縦幅が稼げます
-- **横向き必須**です
-- ターミナルは `Ctrl+@` 系のショートカットが押せないので、左上の **☰ → Terminal → New Terminal**
-- Escape キーがないので、`vim` などのモーダルエディタは開かないこと
+- 画面は横向きにして使います
+- ターミナルを開くショートカット（`Ctrl+@` など）は押せないので、左上の **☰ → Terminal → New Terminal** から開きます
+- Escape キーがないので、`vim` などのモーダルエディタは開かないでください
 
 ## 2. ベースラインを確認する
 
-3つのスイートがあります。合計 **128件**です。
+テストスイートは3つあり、合計 193件です。
 
 ```sh
 bundle exec rspec                          # gem: 151 examples
@@ -38,7 +39,7 @@ bundle exec rspec                          # gem: 151 examples
 
 gem のテストはソケットを一切開かない設計なので、Codespaces のネットワーク環境に関係なく通ります。
 
-## 3. コンテナイメージのビルド（唯一の未検証項目）
+## 3. コンテナイメージをビルドする（未検証の項目）
 
 ```sh
 docker info      # デーモンの生存確認
@@ -53,7 +54,7 @@ docker build -f web/Dockerfile -t gento-web .
 docker run --rm -d -p 8080:8080 --name gento-web gento-web
 ```
 
-確認項目は `verify-container.md` に7つ並べてあります。最低限これだけでも：
+確認項目は `verify-container.md` の 4. に7つ並べてあります。最低限、次の2つは確認してください。
 
 ```sh
 curl -s localhost:8080/healthz
@@ -73,7 +74,7 @@ cd web && bundle exec puma -C config/puma.rb config.ru
 ```
 
 > `ruby app.rb` では起動しません。デモは `Sinatra::Base` のサブクラスなので、
-> `config.ru` 経由で rack サーバーに載せる必要があります。
+> `config.ru` 経由で Rack サーバーに載せる必要があります。
 
 ## 5. Cloudflare にデプロイする
 
@@ -81,11 +82,11 @@ cd web && bundle exec puma -C config/puma.rb config.ru
 
 `wrangler login` は OAuth のコールバックを `http://localhost:8976` で受けます。
 このリダイレクトは**ブラウザが動いている端末**（つまり iPhone）の localhost に向かうので、
-Codespace には届きません。iPhone からは成立しない経路です。
+Codespace には届きません。
 
 代わりに API トークンを使います。Safari で
 `dash.cloudflare.com/profile/api-tokens` → **Create Token** →
-テンプレート **Edit Cloudflare Workers** を選択 → 対象アカウントを指定して作成。
+テンプレート **Edit Cloudflare Workers** を選択 → 対象アカウントを指定して作成します。
 
 アカウント ID は Cloudflare ダッシュボードのアカウントホーム、または URL の
 `dash.cloudflare.com/<ここがアカウントID>` から取れます。
@@ -116,14 +117,15 @@ npx wrangler whoami
 ### 5-3. まず dry-run
 
 デプロイせずに、設定とコンテナイメージのビルドまでを検証します。
-Codespace には Docker があるので、**ここで初めてコンテナのビルドまで含めた検証が通ります**
-（これまでの環境では Docker デーモンがなく、この段階で止まっていました）。
+Codespace には Docker があるので、ここではコンテナのビルドまで含めて検証できます
+（このリポジトリの開発環境には Docker デーモンがなく、検証はこの手前で止まっていました。
+[doc/cloudflare.md](cloudflare.md#未検証の項目) を参照）。
 
 ```sh
 npx wrangler deploy --dry-run
 ```
 
-バインディング一覧とコンテナが解決されれば設定は正しいです。
+バインディングの一覧が表示され、コンテナが解決されれば、設定に問題はありません。
 
 ### 5-4. デプロイ
 
@@ -150,8 +152,8 @@ npx wrangler tail
 
 ### 5-6. 後始末（課金を止める）
 
-デプロイしたまま放置するとコンテナのスリープまでの稼働時間で課金され続けます。
-試すだけなら削除しておきます。
+デプロイしたままにしておくと、リクエストが来るたびにコンテナが起動し、スリープするまでの
+稼働時間が課金されます。試すだけなら削除しておきます。
 
 ```sh
 npx wrangler delete
@@ -164,30 +166,30 @@ cd worker && npx wrangler dev
 ```
 
 PORTS タブに 8787 が出ます。ただし Containers のローカルエミュレーションは癖があるので、
-**まずは 3. の素の `docker run` で疎通を取るほうが確実**です。
+**まずは 3. の素の `docker run` で動作を確かめるほうが確実**です。
 
-## 7. iPhone でのタイピングを回避する
+## 7. iPhone での入力を減らす
 
 長文のコードを iPhone で打つのは現実的ではありません。**Codespaces は「Docker が動く実行環境」として使い、
-編集は Claude Code に委ねる**割り切りをおすすめします。`.devcontainer/setup.sh` で
-インストール済みです。
+編集は Claude Code に任せる**使い方をおすすめします。Claude Code は `.devcontainer/setup.sh` で
+インストールされます（失敗した場合は `npm i -g @anthropic-ai/claude-code` で入れ直せます）。
 
 ```sh
 claude
 ```
 
-OAuth ログイン後は、指示だけで作業できます。
+OAuth でログインすれば、あとは指示を出すだけで作業を進められます。
 
 > doc/verify-container.md の手順どおりにコンテナをビルドして起動し、4サービス分の URL で疎通確認して結果を報告して
 
-同じ要領で、新しく見つかった不具合や対応サービスの追加もそのまま任せられます。
+新しく見つかった不具合の修正や対応サービスの追加も、同じ要領で依頼できます。
 
 ## 8. 終わったら止める
 
 `github.com/codespaces` → 該当 Codespace の「…」→ **Stop codespace**。
 既定では30分で自動停止しますが、明示的に止めたほうが確実です。
 
-ストレージは停止中も無料枠（15GB-month）を消費します。検証が終わったら **Delete** まで。
+ストレージは停止中も無料枠（15GB-month）を消費します。検証が終わったら **Delete** で削除してください。
 このリポジトリの Codespace はイメージのビルド成果物を含めて数 GB になります。
 
 ## つまずきやすいところ
@@ -200,8 +202,8 @@ curl: (56) Connection died, tried 5 times before giving up
 ERROR: Feature "Docker (Docker-in-Docker)" failed to install!
 ```
 
-moby 本体の apt インストールは成功した後、feature が**さらに** standalone の
-`docker-compose` バイナリを GitHub releases から取りに行って失敗しています。
+moby 本体の apt インストールは成功しています。失敗しているのはその後で、feature がさらに
+standalone の `docker-compose` バイナリを GitHub releases から取得しようとしています。
 Codespaces のビルド環境からこのダウンロードが通らないことがあります。
 
 このリポジトリの `devcontainer.json` は `"dockerDashComposeVersion": "none"` を
@@ -220,8 +222,8 @@ ERROR: Feature "Docker (Docker-in-Docker)" failed to install!
 ```
 
 ベースイメージの Debian が trixie に上がり、docker-in-docker feature が既定で入れる
-moby パッケージが存在しないためです。コンテナ作成が失敗し、Codespaces は黙って
-リカバリーコンテナ（`base:alpine`）に切り替えます。**その結果が下の「3つとも見つからない」です。**
+moby パッケージが trixie には存在しないためです。コンテナ作成が失敗し、Codespaces は黙って
+リカバリーコンテナ（`base:alpine`）に切り替えます。その結果、次の項目の「3つとも見つからない」状態になります。
 
 このリポジトリの `devcontainer.json` はベースイメージを `3.3-bookworm` に固定して
 これを回避しています。**ディストロの接尾辞を外さないでください。**
@@ -236,7 +238,7 @@ moby パッケージが存在しないためです。コンテナ作成が失敗
 **`ruby` / `node` / `bundle` が「3つとも」見つからない**
 
 `.devcontainer/setup.sh` の冒頭で3つとも `MISSING` と出る場合、devcontainer が
-適用されていません。ruby イメージと node feature が効いていれば、少なくとも
+適用されていません。ruby イメージと node feature が適用されていれば、少なくとも
 ruby と node は存在するはずだからです。原因は次のどちらかです。
 
 1. devcontainer を追加する前に作った Codespace を使っている
@@ -253,8 +255,8 @@ Codespaces: View Creation Log
 
 `devcontainer` のビルドが失敗していれば、その理由がここに出ます。
 
-続いてリビルドします。**ターミナルから実行するのが一番確実です** — iOS の Safari では
-メニューやコマンドパレットのタッチが効かないことがあるためです。
+続いてリビルドします。**ターミナルから実行するのがいちばん確実です。** iOS の Safari では、
+メニューやコマンドパレットがタップに反応しないことがあるためです。
 
 ```sh
 gh codespace rebuild --full -c "$CODESPACE_NAME"
@@ -287,7 +289,7 @@ ls .ruby-version 2>/dev/null && cat .ruby-version
 `ruby` はあるのに `bundle` がない、あるいは `ruby -v` 自体がエラーになる場合、
 **`.ruby-version` がイメージに入っていないパッチバージョンを指している**のが典型です。
 バージョンマネージャ（rvm / rbenv）が有効化に失敗し、gem の実行ファイルが
-PATH に載らないため、`bundle` を含めて何も見つからなくなります。
+PATH に入らないため、`bundle` を含めて何も見つからなくなります。
 
 このリポジトリは `.ruby-version` を置かない方針にしました（gemspec が `>= 3.1` を
 宣言していて、CI は明示的なマトリクスでバージョンを指定するため、重複した固定は不要です）。
@@ -315,7 +317,7 @@ rbenv versions 2>/dev/null || rvm list 2>/dev/null || gem env | head -20
 所在を表示し、`bundle` が見つからない場合は原因の候補を出して止まります。
 
 **`docker build` が `web/Gemfile.lock not found` で落ちる**
-`web/` をビルドコンテキストにしています。リポジトリのルートで `-f web/Dockerfile ... .` の形で。
+`web/` をビルドコンテキストにしています。リポジトリのルートで `-f web/Dockerfile ... .` の形で実行してください。
 
 **`wrangler deploy` が権限エラーになる**
 `Edit Cloudflare Workers` テンプレートのトークンでも、Containers には追加の権限が要る場合があります。
@@ -326,13 +328,13 @@ rbenv versions 2>/dev/null || rvm list 2>/dev/null || gem env | head -20
 まず、コンテナ固有の問題かネットワーク全体かを切り分けます。Codespace のターミナルで:
 
 ```sh
-curl -sS -A "gento/0.1.0" \
+curl -sS -A "gento/0.1.1" \
   "https://www.slideshare.net/slideshow/ansiblenetwork201808/108457145" \
   | grep -c "Client Challenge"
 ```
 
 `1` が返れば、gem ではなく**この Codespace の出口 IP がボット判定を受けています**。
-SlideShare の保護はリクエストの中身より接続元の評価で判断するため、
+SlideShare はリクエストの中身より接続元 IP の評価で判定するため、
 データセンターの IP（Codespaces は Azure）は恒常的に弾かれることがあります。
 ヘッダを変えても通らないのが普通です。
 
@@ -341,9 +343,9 @@ SlideShare の保護はリクエストの中身より接続元の評価で判断
 
 ```sh
 docker run --rm -p 8080:8080 \
-  -e GENTO_USER_AGENT="Mozilla/5.0 (compatible; gento/0.1.0)" \
+  -e GENTO_USER_AGENT="Mozilla/5.0 (compatible; gento/0.1.1)" \
   gento-web
 ```
 
 どちらでも通らない場合、残る手段は JavaScript を実行できる `Gento::Fetcher` を
-差し込むことです（gem 本体は無改造で載ります）。他の3サービスは影響を受けません。
+差し込むことです（gem 本体は改造せずに使えます）。他の3サービスは影響を受けません。

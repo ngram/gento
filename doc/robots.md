@@ -1,10 +1,10 @@
 # robots.txt の扱い
 
-**既定で ON です。** 取得先ホストの `robots.txt` を読み、拒否されているパスにはリクエストを
+**既定で有効です。** 取得先ホストの `robots.txt` を読み、拒否されているパスにはリクエストを
 送りません。RFC 9309 に沿って実装しています。
 
 対象はデッキページだけではありません。`Gento::RobotsFetcher` が
-`Gento::Fetcher` をラップする形になっているので、**アダプタが出すすべてのリクエスト**
+`Gento::Fetcher` をラップする形になっているので、アダプタが出すすべてのリクエスト
 （oEmbed エンドポイント、Docswell の embed ビュー、Google スライドの `/htmlpresent`）が
 同じ判定を通ります。
 
@@ -19,7 +19,7 @@ Gento::Client.new(robots: false)
 $ gento --no-robots URL
 ```
 
-デモアプリは環境変数で切り替えます（既定 ON）。
+デモアプリは環境変数で切り替えます（既定は有効）。
 
 ```console
 $ docker run -e GENTO_ROBOTS=off ... gento-web
@@ -30,9 +30,10 @@ $ docker run -e GENTO_ROBOTS=off ... gento-web
 
 ## 判定ルール
 
-### 最長一致が勝ちます
+### Allow と Disallow の両方に一致するとき
 
-ここが実装上いちばん重要な点です。Google の `robots.txt` は末尾がこうなっています。
+この規則をどう実装するかで、Google スライドを取得できるかどうかが決まります。
+Google の `robots.txt` は末尾がこうなっています。
 
 ```
 Allow: /presentation
@@ -40,15 +41,15 @@ Allow: /presentation
 Disallow: /
 ```
 
-**先頭から順に見て最初に一致したものを採用する実装だと、Google スライドは全滅します。**
-RFC 9309 が定めるとおり、一致したパターンのうち**最も長いもの**を採用します
-（`/presentation` は13文字、`/` は1文字なので Allow が勝つ）。
-同じ長さで Allow と Disallow が衝突した場合は Allow です。
+`Allow` を解釈しない実装や、`Disallow` を `Allow` より優先する実装では、`Disallow: /` によって
+Google スライドへのリクエストがすべて拒否されます。この gem は RFC 9309 が定めるとおり、
+一致したパターンのうち**最も長いもの**を採用します（`/presentation` は13文字、`/` は1文字なので
+Allow を採用する）。同じ長さの Allow と Disallow が両方一致した場合は Allow を採用します。
 
 ### パターン
 
 - `*` は任意の文字列
-- `$` は末尾の固定
+- `$` はパスの末尾
 - それ以外は前方一致（`Disallow: /api/` は `/api/decks?url=x` に一致）
 - 判定対象はパスとクエリの両方（`Disallow: /search?` は `/search?q=x` に一致し `/search` には一致しない）
 - 値が空の `Disallow:` は「制限なし」の意味なので、規則として扱いません
@@ -57,9 +58,10 @@ RFC 9309 が定めるとおり、一致したパターンのうち**最も長い
 
 自分を名指ししているグループが1つだけ適用され、なければ `*` のグループが使われます。
 突き合わせるのは User-Agent 文字列全体ではなく**プロダクトトークン**
-（最初のスラッシュまで。`gento/0.1.0 (+https://github.com/ngram/gento)`
-なら `gento`）です。文字列全体で部分一致させると、UA に含まれる URL のせいで
-無関係なグループに巻き込まれます。
+（最初のスラッシュまで。`gento/0.1.1 (+https://github.com/ngram/gento)`
+なら `gento`）です。文字列全体に対して部分一致を調べると、UA に含まれる URL が
+無関係なグループに一致してしまいます（たとえば `github` を名指ししたグループに、
+UA 中の `github.com` が一致する）。
 
 `GENTO_USER_AGENT` や `--user-agent` で名乗りを変えると、**適用されるグループも変わります。**
 たとえば SlideShare は複数のクローラを名指しで全面拒否しているので、それらに一致する名前を
@@ -70,20 +72,22 @@ RFC 9309 が定めるとおり、一致したパターンのうち**最も長い
 | 応答 | 扱い |
 | --- | --- |
 | 2xx | 内容に従う |
-| 404 その他の 4xx | robots.txt が無い → **全て許可** |
-| 429 | 「後で来い」であって「無い」ではない → **全て拒否** |
-| 5xx | **全て拒否** |
-| 接続失敗・タイムアウト | **全て拒否** |
+| 404 その他の 4xx | robots.txt が無い → すべて許可 |
+| 429 | 「時間をおいて再試行」の意味で、robots.txt が無いことを意味しない → すべて拒否 |
+| 5xx | すべて拒否 |
+| 接続失敗・タイムアウト | すべて拒否 |
 
-読めなかったことは許可ではない、というのが RFC 9309 §2.3.1.4 の立場で、それに従っています。
-一時的な 5xx で取得が失敗しうるということでもあるので、エラーメッセージには
+5xx と接続失敗をすべて拒否として扱うのは、RFC 9309 §2.3.1.4 の定めに従ったものです。
+読めなかったことを許可とはみなしません。429 は 4xx ですが、robots.txt が無いことを
+示す応答ではないので、同じく拒否として扱います。
+そのぶん一時的な 5xx でも取得が失敗するので、エラーメッセージには
 `robots: false` で回避できることを書いてあります。
 
 ## Content-Type は見ていません
 
 本文は Content-Type に関係なくパースします。
 
-Speaker Deck は `Accept: text/plain` を送らないと `/robots.txt` を**サイトの HTML レイアウトに
+Speaker Deck は、`Accept: text/plain` を送らないと `/robots.txt` を**サイトの HTML レイアウトに
 包んで返します**（`content-type: text/html`）。中身は本物の `robots.txt` です。
 Content-Type だけで弾く実装だと、この本物の規則を捨ててしまいます。
 
@@ -94,9 +98,9 @@ Content-Type だけで弾く実装だと、この本物の規則を捨ててし�
 ## Crawl-delay
 
 パースして `RobotsFetcher#crawl_delay(url)` で取得できますが、**自動では待ちません。**
-1回の `fetch` が出すリクエストは数件で、フェッチャの内側で `sleep` するのは、
-自分でペース配分をしている呼び出し側にとって予想外の挙動になるためです。
-複数デッキをまとめて処理する場合は、この値を見て呼び出し側で待ってください。
+1回の `fetch` が出すリクエストは数件です。フェッチャの内側で `sleep` すると、
+自分でペース配分をしている呼び出し側にとって予想外の挙動になります。
+複数のデッキをまとめて処理する場合は、この値を見て呼び出し側で待ってください。
 
 ```ruby
 fetcher = Gento::RobotsFetcher.new(Gento::NetHttpFetcher.new)
@@ -106,7 +110,7 @@ fetcher.crawl_delay("https://docs.google.com/presentation/d/x/htmlpresent")  # =
 ## 各サービスの実際の内容
 
 2026年10月時点で実際に取得し、既定の User-Agent（プロダクトトークン `gento`）で判定した
-結果です。**4サービスとも、この gem がやっている取得は許可されています。**
+結果です。**4サービスとも、この gem が行う取得は許可されています。**
 `gento` を名指ししているグループはどこにもなく、`*` のグループが適用されます。
 
 | サービス | 内容 | この gem への影響 |
@@ -116,7 +120,7 @@ fetcher.crawl_delay("https://docs.google.com/presentation/d/x/htmlpresent")  # =
 | Docswell | `Disallow: /slide/*/download` の1件のみ | なし（embed ビューは許可） |
 | Google スライド | `Allow: /presentation` ＋ `Disallow: /`、`Crawl-delay: 1` | なし（最長一致で許可） |
 
-内容は変わりうるので、これは保証ではありません。手元で確かめるには:
+内容は変わりうるので、これは保証ではありません。手元で確かめるには、次のように取得します。
 
 ```console
 $ curl -sS -H "Accept: text/plain" https://speakerdeck.com/robots.txt
@@ -127,8 +131,8 @@ $ curl -sS -H "Accept: text/plain" https://speakerdeck.com/robots.txt
 **リダイレクト先はチェックしていません。** リダイレクトの追跡はラップされた側の
 `Fetcher` が内部で行うため、拒否されたパスへリダイレクトされた場合は素通りします。
 これを塞ぐには `Fetcher` にホップごとのコールバックを持たせる必要があり、
-追加するインタフェースに見合わないと判断しました。
+それだけのインタフェースを追加する価値はないと判断しました。
 
-**`robots.txt` は画像の取得までは縛れません。** この gem が返すのは画像 URL であって、
+**`robots.txt` で画像の取得までは制御できません。** この gem が返すのは画像 URL であって、
 画像自体は取得しないためです。返された URL を実際に取得する場合は、
-そのホスト（`files.speakerdeck.com` など）の `robots.txt` は別途確認してください。
+そのホスト（`files.speakerdeck.com` など）の `robots.txt` を別途確認してください。

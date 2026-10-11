@@ -5,8 +5,7 @@
 
 ## 現状
 
-- **gem 名 `gento` は未使用です**（2026年10月に RubyGems API で確認済み。
-  `gentou` も空いています）
+- RubyGems.org に 0.1.1 を公開済みです（[rubygems.org/gems/gento](https://rubygems.org/gems/gento)、2026年10月5日）
 - `gem build gento.gemspec` は警告なしで通り、24ファイルがパッケージされます
   （`lib/`、`exe/`、README、CHANGELOG、LICENSE。テストとフィクスチャは含みません）
 
@@ -30,8 +29,6 @@ $ tar -xOf gento-0.1.1.gem data.tar.gz | tar -tzf -
 
 ## 方法A: 手元から push（最短）
 
-初回はこちらが簡単です。
-
 ```console
 $ gem signin                       # RubyGems.org のアカウントでサインイン
 $ gem push gento-0.1.1.gem
@@ -45,8 +42,8 @@ $ gem push gento-0.1.1.gem
 
 ## 方法B: Trusted Publishing（GitHub Actions から、推奨）
 
-API キーを一切保存せずに、OIDC で GitHub Actions から公開する方式です。
-長期有効なトークンをリポジトリのシークレットに置かずに済みます。
+OIDC を使って GitHub Actions から公開する方式です。
+長期有効な API キーを、手元にもリポジトリのシークレットにも置かずに済みます。
 
 **まだ存在しない gem でも設定できます。** RubyGems.org に「pending trusted publisher」
 として先に登録しておくと、初回 push が成功した時点で通常の trusted publisher に変わり、
@@ -54,7 +51,7 @@ API キーを一切保存せずに、OIDC で GitHub Actions から公開する�
 
 ワークフローは [`.github/workflows/release.yml`](../.github/workflows/release.yml) にあります。
 `v*` のタグが push されると起動し、`rubygems/release-gem` が `rake release` を実行します。
-タグはすでにあるので、`rake release` はタグ付けとブランチの push を飛ばし、
+タグはすでにあるので、`rake release` はタグ付けとブランチの push を省略し、
 gem のビルドと push だけを行います。`id-token: write` を忘れると OIDC トークンが取れず失敗します。
 
 gemspec の `rubygems_mfa_required` は、アカウントの API キーで push するとき（方法A）に
@@ -89,13 +86,13 @@ CHANGELOG を `main` に入れてから作成し、作成したらすぐにタ�
 ```console
 $ git switch main
 $ git pull
-$ git tag v0.1.0             # version.rb の VERSION と同じ番号にする
-$ git push origin v0.1.0     # 方法B ならこれで公開まで走る
+$ git tag v0.1.1             # version.rb の VERSION と同じ番号にする
+$ git push origin v0.1.1     # 方法B ならこれで公開まで進む
 ```
 
 **タグ名は `v` + `VERSION` と一致させてください。** `rake release` は `v#{VERSION}` の
-タグがあるかどうかでタグ付けを飛ばすかを決めるので、ずれていると自分でタグを打って
-ブランチを push しようとします。
+タグがあるかどうかでタグ付けを省略するかを決めます。ずれていると、`rake release` が
+自分でタグを打ち、ブランチを push しようとします。
 
 GitHub の Actions タブで Release ワークフローが成功したら、https://rubygems.org/gems/gento
 で公開されたことと、Changelog などのリンクが開くことを確認します。
@@ -105,7 +102,7 @@ GitHub の Actions タブで Release ワークフローが成功したら、http
 ## 公開後に取り消したい場合
 
 ```console
-$ gem yank gento -v 0.1.0
+$ gem yank gento -v 0.1.1
 ```
 
 **yank しても同じバージョン番号で再公開はできません。** 番号を上げてください。
